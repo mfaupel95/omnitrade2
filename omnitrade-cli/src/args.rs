@@ -40,6 +40,10 @@ pub enum Commands {
         /// Slippage in basis points.
         #[arg(long, value_name = "BPS", default_value_t = 5.0)]
         slippage_bps: f64,
+
+        /// Order quantity per signal (default 1.0).
+        #[arg(long, value_name = "AMOUNT", default_value_t = 1.0)]
+        quantity: f64,
     },
     /// Validate a strategy script for syntax and structural correctness.
     Validate {
@@ -74,7 +78,8 @@ pub enum Commands {
         #[arg(long, value_name = "NETWORK", default_value = "testnet")]
         network: String,
 
-        /// Initial account balance for trading.
+        /// Capital per position in quote currency (default 500). Long-only:
+        /// a buy spends it when flat, a sell closes the position.
         #[arg(long, value_name = "AMOUNT")]
         initial_capital: Option<f64>,
 
@@ -90,6 +95,15 @@ pub enum Commands {
         /// Bestätigt, dass auf Mainnet echtes Geld eingesetzt wird (nur OKX).
         #[arg(long)]
         confirm_real_money: bool,
+        /// Write a JSON status snapshot to this file while running
+        /// (read-only view for dashboards; written atomically).
+        #[arg(long, value_name = "PATH")]
+        status_file: Option<PathBuf>,
+
+        /// Candle length the strategy runs on, e.g. "1m", "15m", "1h", "4h",
+        /// "1d". On OKX the last 300 closed candles preload the indicators.
+        #[arg(long, value_name = "INTERVAL", default_value = "1m")]
+        interval: String,
     },
     /// Emergency kill switch to halt all trading operations.
     ///
@@ -125,6 +139,8 @@ mod tests {
             "0.002",
             "--slippage-bps",
             "10.0",
+            "--quantity",
+            "0.05",
         ];
 
         // Act
@@ -138,6 +154,7 @@ mod tests {
             initial_balance,
             fee_rate,
             slippage_bps,
+            quantity,
         } = parsed.command
         {
             assert_eq!(script, PathBuf::from("/path/to/script.omni"));
@@ -145,6 +162,7 @@ mod tests {
             assert!((initial_balance - 5000.0).abs() < f64::EPSILON);
             assert!((fee_rate - 0.002).abs() < f64::EPSILON);
             assert!((slippage_bps - 10.0).abs() < f64::EPSILON);
+            assert!((quantity - 0.05).abs() < f64::EPSILON);
         } else {
             unreachable!("Expected Commands::Backtest variant");
         }
@@ -173,6 +191,7 @@ mod tests {
             initial_balance,
             fee_rate,
             slippage_bps,
+            quantity,
         } = parsed.command
         {
             assert_eq!(script, PathBuf::from("script.omni"));
@@ -180,6 +199,7 @@ mod tests {
             assert!((initial_balance - 10000.0).abs() < f64::EPSILON);
             assert!((fee_rate - 0.001).abs() < f64::EPSILON);
             assert!((slippage_bps - 5.0).abs() < f64::EPSILON);
+            assert!((quantity - 1.0).abs() < f64::EPSILON);
         } else {
             unreachable!("Expected Commands::Backtest variant");
         }
@@ -266,6 +286,8 @@ mod tests {
             quantity,
             max_notional_usd,
             confirm_real_money,
+            status_file,
+            interval,
         } = parsed.command
         {
             assert_eq!(script, Some(PathBuf::from("strategy.omni")));
@@ -276,6 +298,8 @@ mod tests {
             assert_eq!(initial_capital, None);
             assert_eq!(quantity, 0.001);
             assert_eq!(max_notional_usd, None);
+            assert_eq!(status_file, None);
+            assert_eq!(interval, "1m");
             assert!(!confirm_real_money);
         } else {
             unreachable!("Expected Commands::Live variant");
@@ -309,6 +333,8 @@ mod tests {
             quantity,
             max_notional_usd,
             confirm_real_money,
+            status_file,
+            interval,
         } = parsed.command
         {
             assert_eq!(script, None);
@@ -319,6 +345,8 @@ mod tests {
             assert_eq!(initial_capital, None);
             assert_eq!(quantity, 0.001);
             assert_eq!(max_notional_usd, None);
+            assert_eq!(status_file, None);
+            assert_eq!(interval, "1m");
             assert!(!confirm_real_money);
         } else {
             unreachable!("Expected Commands::Live variant");
@@ -356,6 +384,8 @@ mod tests {
             quantity,
             max_notional_usd,
             confirm_real_money,
+            status_file,
+            interval,
         } = parsed.command
         {
             assert_eq!(script, Some(PathBuf::from("strategy.omni")));
@@ -366,6 +396,8 @@ mod tests {
             assert_eq!(initial_capital, Some(5000.0));
             assert_eq!(quantity, 0.001);
             assert_eq!(max_notional_usd, None);
+            assert_eq!(status_file, None);
+            assert_eq!(interval, "1m");
             assert!(!confirm_real_money);
         } else {
             unreachable!("Expected Commands::Live variant");

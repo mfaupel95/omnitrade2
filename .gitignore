@@ -46,3 +46,4 @@ id_ed25519*
 # Claude-Code-Worktrees gehoeren nicht in den Verlauf; Projekt-Skills schon.
 .claude/*
 !.claude/skills/
+/target-live/

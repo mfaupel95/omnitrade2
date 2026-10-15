@@ -9,7 +9,14 @@ use omnitrade_core::{Candle, Ema, Rsi, Sma};
 
 use crate::ast::{BinaryOp, Expr, Signal, Stmt};
 use crate::error::ScriptError;
+use crate::extra;
 use crate::order_intent::{EvaluatorState, OrderIntent};
+
+fn short(name: &str, candles: &[Candle]) -> ScriptError {
+    ScriptError::EvalError {
+        message: format!("insufficient candles ({}) for {name}", candles.len()),
+    }
+}
 
 /// Evaluator for strategy scripts.
 ///
@@ -309,10 +316,139 @@ impl Evaluator {
                     ),
                 })
             }
+            // highest/lowest rechnen ueber die `period` Kerzen VOR der aktuellen
+            // (exklusive) — Donchian/Breakout-Semantik: der aktuelle Close kann
+            // sonst nie das Fenster-High uebersteigen (high >= close).
+            "highest" => {
+                let period = self.eval_period_arg("highest", args, candles)?;
+                if candles.len() < period + 1 {
+                    return Err(ScriptError::EvalError {
+                        message: format!(
+                            "insufficient candles ({}) for highest with period {period}",
+                            candles.len()
+                        ),
+                    });
+                }
+                let start = candles.len() - 1 - period;
+                let window = &candles[start..candles.len() - 1];
+                Ok(window
+                    .iter()
+                    .map(|c| c.high)
+                    .fold(f64::NEG_INFINITY, f64::max))
+            }
+            "lowest" => {
+                let period = self.eval_period_arg("lowest", args, candles)?;
+                if candles.len() < period + 1 {
+                    return Err(ScriptError::EvalError {
+                        message: format!(
+                            "insufficient candles ({}) for lowest with period {period}",
+                            candles.len()
+                        ),
+                    });
+                }
+                let start = candles.len() - 1 - period;
+                let window = &candles[start..candles.len() - 1];
+                Ok(window.iter().map(|c| c.low).fold(f64::INFINITY, f64::min))
+            }
+            "atr" => {
+                let period = self.eval_period_arg("atr", args, candles)?;
+                if candles.len() < period + 1 {
+                    return Err(ScriptError::EvalError {
+                        message: format!(
+                            "insufficient candles ({}) for atr with period {period}",
+                            candles.len()
+                        ),
+                    });
+                }
+                let start = candles.len() - period;
+                let mut sum = 0.0;
+                for i in start..candles.len() {
+                    let c = &candles[i];
+                    let prev_close = candles[i - 1].close;
+                    let tr = (c.high - c.low)
+                        .max((c.high - prev_close).abs())
+                        .max((c.low - prev_close).abs());
+                    sum += tr;
+                }
+                Ok(sum / period as f64)
+            }
+            // prev(expr): der Ausdruck auf der Kerzenreihe ohne die letzte Kerze.
+            // So laesst sich ein Kreuzen schreiben: a > b && prev(a) <= prev(b).
+            "prev" => {
+                if args.len() != 1 {
+                    return Err(ScriptError::EvalError {
+                        message: "prev() expects 1 argument".to_string(),
+                    });
+                }
+                if candles.len() < 2 {
+                    return Err(short(name, candles));
+                }
+                self.eval_expr(&args[0], &candles[..candles.len() - 1])
+            }
+            "macd" | "macd_signal" | "macd_hist" => {
+                let a = self.eval_args(name, args, 3, candles)?;
+                let (fast, slow, sig) = (a[0] as usize, a[1] as usize, a[2] as usize);
+                let (line, signal, hist) =
+                    extra::macd(candles, fast, slow, sig).ok_or_else(|| short(name, candles))?;
+                Ok(match name {
+                    "macd" => line,
+                    "macd_signal" => signal,
+                    _ => hist,
+                })
+            }
+            "bb_lower" | "bb_mid" | "bb_upper" => {
+                let a = self.eval_args(name, args, 2, candles)?;
+                let (lo, mid, hi) = extra::bollinger(candles, a[0] as usize, a[1])
+                    .ok_or_else(|| short(name, candles))?;
+                Ok(match name {
+                    "bb_lower" => lo,
+                    "bb_mid" => mid,
+                    _ => hi,
+                })
+            }
+            "stoch_k" => {
+                let a = self.eval_args(name, args, 1, candles)?;
+                extra::stoch_k(candles, a[0] as usize).ok_or_else(|| short(name, candles))
+            }
+            "adx" | "plus_di" | "minus_di" => {
+                let a = self.eval_args(name, args, 1, candles)?;
+                let (adx, pdi, ndi) =
+                    extra::adx(candles, a[0] as usize).ok_or_else(|| short(name, candles))?;
+                Ok(match name {
+                    "adx" => adx,
+                    "plus_di" => pdi,
+                    _ => ndi,
+                })
+            }
             _ => Err(ScriptError::UndefinedFunction {
                 name: name.to_string(),
             }),
         }
+    }
+
+    fn eval_args(
+        &mut self,
+        func_name: &str,
+        args: &[Expr],
+        count: usize,
+        candles: &[Candle],
+    ) -> Result<Vec<f64>, ScriptError> {
+        if args.len() != count {
+            return Err(ScriptError::EvalError {
+                message: format!("{func_name}() expects {count} arguments"),
+            });
+        }
+        let mut out = Vec::with_capacity(count);
+        for a in args {
+            let v = self.eval_expr(a, candles)?;
+            if v <= 0.0 || v.is_nan() {
+                return Err(ScriptError::EvalError {
+                    message: format!("invalid argument for {func_name}: {v}"),
+                });
+            }
+            out.push(v);
+        }
+        Ok(out)
     }
 
     fn eval_period_arg(
@@ -549,5 +685,88 @@ mod tests {
         // Assert: current price 109 < highest 110 * (1 - 0.05) = 104.5, so no trigger
         assert_eq!(intent.signal, Signal::Buy);
         assert_eq!(intent.trailing_pct, Some(0.05));
+    }
+
+    #[test]
+    fn test_evaluate_highest_function() {
+        // highs = p+1: 11,13,12,16,14; highest(3) ueber letzte 3 = 16
+        let candles = helper_candles(&[10.0, 12.0, 11.0, 15.0, 13.0]);
+        let tokens = tokenize("if highest(3) < 20 { buy() }").expect("tokenize");
+        let stmts = parse(&tokens).expect("parse");
+        let mut evaluator = Evaluator::new();
+        let sig = evaluator
+            .evaluate(&stmts, &candles)
+            .expect("evaluation should succeed");
+        assert_eq!(sig, Signal::Buy);
+    }
+
+    #[test]
+    fn test_evaluate_lowest_function() {
+        // lows = p-1: 9,11,10,14,12; lowest(3) = 10
+        let candles = helper_candles(&[10.0, 12.0, 11.0, 15.0, 13.0]);
+        let tokens = tokenize("if lowest(3) > 5 { buy() }").expect("tokenize");
+        let stmts = parse(&tokens).expect("parse");
+        let mut evaluator = Evaluator::new();
+        let sig = evaluator
+            .evaluate(&stmts, &candles)
+            .expect("evaluation should succeed");
+        assert_eq!(sig, Signal::Buy);
+    }
+
+    #[test]
+    fn test_evaluate_atr_function() {
+        // closes 10,11,12; TR1=2, TR2=2 -> atr(2)=2
+        let candles = helper_candles(&[10.0, 11.0, 12.0]);
+        let tokens = tokenize("if atr(2) > 1 { buy() }").expect("tokenize");
+        let stmts = parse(&tokens).expect("parse");
+        let mut evaluator = Evaluator::new();
+        let sig = evaluator
+            .evaluate(&stmts, &candles)
+            .expect("evaluation should succeed");
+        assert_eq!(sig, Signal::Buy);
+    }
+
+    #[test]
+    fn test_evaluate_insufficient_highest() {
+        let candles = helper_candles(&[1.0, 2.0]);
+        let tokens = tokenize("if highest(5) > 0 { buy() }").expect("tokenize");
+        let stmts = parse(&tokens).expect("parse");
+        let mut evaluator = Evaluator::new();
+        assert!(matches!(
+            evaluator.evaluate(&stmts, &candles),
+            Err(ScriptError::EvalError { .. })
+        ));
+    }
+
+    #[test]
+    fn test_new_indicators_callable_from_script() {
+        let prices: Vec<f64> = (0..80).map(|i| 100.0 + 2.0 * i as f64).collect();
+        let candles = helper_candles(&prices);
+        let code = "if macd_hist(12, 26, 9) > -1000 && adx(14) > 40 && plus_di(14) > minus_di(14) && stoch_k(14) > 80 && close() > bb_mid(20, 2) && bb_upper(20, 2) > bb_lower(20, 2) && macd(12, 26, 9) > macd_signal(12, 26, 9) - 1000 { buy() }";
+        let stmts = parse(&tokenize(code).unwrap()).unwrap();
+        let mut evaluator = Evaluator::new();
+        assert_eq!(evaluator.evaluate(&stmts, &candles).unwrap(), Signal::Buy);
+        let bad = parse(&tokenize("if adx(14, 3) > 1 { buy() }").unwrap()).unwrap();
+        assert!(Evaluator::new().evaluate(&bad, &candles).is_err());
+    }
+
+    #[test]
+    fn test_prev_detects_crossover() {
+        // Kurs 10,10,10,20: nur auf der letzten Kerze kreuzt close ueber 15.
+        let candles = helper_candles(&[10.0, 10.0, 10.0, 20.0]);
+        let code = "if close() > 15 && prev(close()) <= 15 { buy() }";
+        let stmts = parse(&tokenize(code).unwrap()).unwrap();
+        assert_eq!(
+            Evaluator::new().evaluate(&stmts, &candles).unwrap(),
+            Signal::Buy
+        );
+        // Eine Kerze spaeter ist der Kurs schon drueber: kein Kreuzen mehr.
+        let candles = helper_candles(&[10.0, 10.0, 20.0, 20.0]);
+        assert_eq!(
+            Evaluator::new().evaluate(&stmts, &candles).unwrap(),
+            Signal::Hold
+        );
+        let bad = parse(&tokenize("if prev(1, 2) > 0 { buy() }").unwrap()).unwrap();
+        assert!(Evaluator::new().evaluate(&bad, &candles).is_err());
     }
 }

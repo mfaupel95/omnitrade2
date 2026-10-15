@@ -6,6 +6,7 @@
 use crate::grid_loop::{grid_loop, GridLiveConfig};
 use crate::kill_switch;
 use crate::live_loop::{live_loop, valid_mainnet_cap, LiveConfig, MAINNET_HARD_CAP};
+use crate::status::StatusWriter;
 use omnitrade_exchange::okx::{swap, InstType};
 use omnitrade_exchange::{
     credentials, fetch_symbol_filters, BinanceClient, Exchange, Keystore, Network, OkxClient,
@@ -42,7 +43,14 @@ pub struct LiveArgs<'a> {
     pub max_notional_usd: Option<f64>,
     /// Ausdrückliche Bestätigung, dass auf Mainnet echtes Geld eingesetzt wird.
     pub confirm_real_money: bool,
+    /// JSON-Status-Snapshot für Beobachter (`--status-file`).
+    pub status_file: Option<&'a Path>,
+    /// Kerzenlänge der Strategie (`--interval`), z. B. "1m", "1h".
+    pub interval: &'a str,
 }
+
+/// Anzahl abgeschlossener Kerzen, mit denen die Indikatoren vorgewärmt werden.
+const WARMUP_CANDLES: usize = 300;
 
 /// Handles the live trading command.
 ///
@@ -66,6 +74,8 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
         order_quantity,
         max_notional_usd: max_notional,
         confirm_real_money,
+        status_file,
+        interval,
     } = *args;
 
     // Validate that either script or grid is specified
@@ -171,6 +181,23 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
         }
 
         let script_str = script_path.to_string_lossy().to_string();
+        // Vorwärmung: abgeschlossene Kerzen der Börse, damit Indikatoren sofort greifen.
+        let warmup = exchange
+            .fetch_history(network, symbol, interval, WARMUP_CANDLES)
+            .await
+            .map_err(|e| format!("Vorwärmung für {symbol} ({interval}) fehlgeschlagen: {e}"))?;
+        info!(
+            "Vorwärmung: {} abgeschlossene {interval}-Kerzen",
+            warmup.len()
+        );
+        let mut status = StatusWriter::new(
+            status_file.map(Path::to_path_buf),
+            exchange_str,
+            symbol,
+            network_str,
+            &script_str,
+            initial_capital,
+        );
         let config = LiveConfig {
             script_path: &script_str,
             symbol,
@@ -179,6 +206,8 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
             order_quantity,
             kill_file: &kill_file,
             max_notional,
+            interval,
+            warmup: &warmup,
         };
 
         match exchange {
@@ -195,7 +224,16 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
                 let mut trading_client = BinanceClient::new();
                 trading_client.set_credentials(trading_creds)?;
 
-                live_loop(&config, stream_client, trading_client, &mut risk_guard).await?;
+                let outcome = live_loop(
+                    &config,
+                    stream_client,
+                    trading_client,
+                    &mut risk_guard,
+                    &mut status,
+                )
+                .await;
+                finish_status(&mut status, &outcome);
+                outcome?;
             }
             Exchange::Okx => {
                 // Testnet = OKX demo trading (demo API keys, simulated-trading header).
@@ -215,7 +253,16 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
                     prepare_okx_swap(&trading_client, symbol).await?;
                 }
 
-                live_loop(&config, stream_client, trading_client, &mut risk_guard).await?;
+                let outcome = live_loop(
+                    &config,
+                    stream_client,
+                    trading_client,
+                    &mut risk_guard,
+                    &mut status,
+                )
+                .await;
+                finish_status(&mut status, &outcome);
+                outcome?;
             }
             Exchange::Kraken => return Err("Kraken: Handel ist gesperrt".into()),
         }
@@ -277,6 +324,17 @@ fn load_credentials(
         credentials::ApiCredentials::new(api_key, api_secret, network)
     };
     Ok(creds)
+}
+
+/// Setzt den Endzustand im Status-Snapshot und schreibt ihn; ein Schreibfehler stoppt nichts.
+fn finish_status<E: std::fmt::Display>(status: &mut StatusWriter, outcome: &Result<(), E>) {
+    match outcome {
+        Ok(()) => status.set_state("stopped"),
+        Err(e) => status.set_error(&e.to_string()),
+    }
+    if let Err(e) = status.flush() {
+        tracing::warn!("Status-Datei konnte nicht geschrieben werden: {e}");
+    }
 }
 
 /// REST-Domain für EWR-Konten.
@@ -382,6 +440,8 @@ mod tests {
             order_quantity: 0.001,
             max_notional_usd: None,
             confirm_real_money: false,
+            status_file: None,
+            interval: "1m",
         })
         .await
         .map_err(|e| e.to_string())
@@ -468,6 +528,8 @@ mod tests {
             order_quantity: 0.0001,
             max_notional_usd: cap,
             confirm_real_money: confirm,
+            status_file: None,
+            interval: "1m",
         }
     }
 

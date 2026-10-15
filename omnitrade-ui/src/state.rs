@@ -5,6 +5,8 @@ use std::collections::{HashMap, VecDeque};
 use omnitrade_core::{Candle, Order, Position};
 use omnitrade_engine::L2OrderBook;
 
+use crate::status_feed::StatusDoc;
+
 /// Thread-safe state container storing passive UI snapshots of engine data.
 #[derive(Debug, Clone)]
 pub struct UIState {
@@ -26,6 +28,10 @@ pub struct UIState {
     pub open_orders: Vec<Order>,
     /// Recent log lines for the console panel (oldest first).
     pub log: VecDeque<String>,
+    /// Latest snapshot from `omnitrade live --status-file`, if readable.
+    pub status: Option<StatusDoc>,
+    /// Why the status feed is not delivering (missing or bad file).
+    pub feed_error: Option<String>,
 }
 
 /// Maximum number of retained console log lines.
@@ -44,6 +50,8 @@ impl UIState {
             balances: Vec::new(),
             open_orders: Vec::new(),
             log: VecDeque::new(),
+            status: None,
+            feed_error: None,
         }
     }
 

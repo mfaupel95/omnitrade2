@@ -15,6 +15,7 @@ use thiserror::Error;
 use tracing::{error, info, trace, warn};
 
 use crate::kill_switch;
+use crate::status::StatusWriter;
 
 mod risk;
 #[cfg(test)]
@@ -59,6 +60,21 @@ pub enum LiveLoopError {
     NetworkError(String),
 }
 
+/// Schreibt den Status-Snapshot; ein fehlgeschlagenes Schreiben stoppt den Handel nicht.
+fn flush_status(status: &mut StatusWriter) {
+    if let Err(e) = status.flush() {
+        warn!("Status-Datei konnte nicht geschrieben werden: {}", e);
+    }
+}
+
+fn signal_name(signal: omnitrade_script::Signal) -> &'static str {
+    match signal {
+        omnitrade_script::Signal::Buy => "buy",
+        omnitrade_script::Signal::Sell => "sell",
+        omnitrade_script::Signal::Hold => "hold",
+    }
+}
+
 /// Laufzeit-Parameter eines Live-Laufs.
 #[derive(Debug, Clone)]
 pub struct LiveConfig<'a> {
@@ -77,6 +93,11 @@ pub struct LiveConfig<'a> {
     /// Deckel für die Position, die dieser Lauf selbst aufbaut (Quote-Währung).
     /// Auf Mainnet Pflicht und höchstens [`MAINNET_HARD_CAP`].
     pub max_notional: Option<f64>,
+    /// Kerzenlänge, auf der die Strategie läuft (z. B. "1m", "1h").
+    pub interval: &'a str,
+    /// Bereits geschlossene Kerzen, die die Indikatoren vorwärmen. Leer, wenn die Börse
+    /// keine Historie liefert.
+    pub warmup: &'a [Candle],
 }
 
 /// Fest verdrahteter Höchstwert des Deckels auf Mainnet (Quote-Währung, z. B. USD).
@@ -96,6 +117,7 @@ pub async fn live_loop(
     mut exchange_stream: impl ExchangeStream,
     exchange_trading: impl ExchangeTrading,
     risk_guard: &mut RiskGuard,
+    status: &mut StatusWriter,
 ) -> Result<(), LiveLoopError> {
     let LiveConfig {
         script_path,
@@ -105,6 +127,8 @@ pub async fn live_loop(
         order_quantity,
         kill_file,
         max_notional,
+        interval,
+        warmup,
     } = *config;
 
     // Mainnet nur mit gültigem Deckel (testnet-first, echtes Geld braucht eine Grenze).
@@ -134,7 +158,7 @@ pub async fn live_loop(
     // Abonnieren muss VOR connect() geschehen: connect() übergibt den Router
     // an die Verbindung, danach scheitert subscribe_candles.
     let mut candle_rx = exchange_stream
-        .subscribe_candles(symbol, "1m")
+        .subscribe_candles(symbol, interval)
         .await
         .map_err(|e| LiveLoopError::ExchangeError(e.to_string()))?;
 
@@ -145,7 +169,11 @@ pub async fn live_loop(
     info!("Verbunden mit Binance ({:?})", network);
 
     // Candle buffer for script evaluation (auf MAX_CANDLE_BUFFER begrenzt)
-    let mut candle_buffer: Vec<Candle> = Vec::new();
+    let mut candle_buffer: Vec<Candle> = warmup.to_vec();
+    for candle in &candle_buffer {
+        status.record_candle(candle, "hold");
+    }
+    flush_status(status);
 
     // Not-Aus wird bei jeder Kerze und im Sekundentakt geprüft, damit er auch
     // bei ruhigem Markt wirkt.
@@ -168,6 +196,13 @@ pub async fn live_loop(
         if kill_switch::is_engaged(kill_file) {
             return halt_trading(&exchange_trading, symbol, &mut exchange_stream).await;
         }
+        // Eine Kerze kann in der Vorwärmung und im Stream zugleich erscheinen.
+        if candle_buffer
+            .last()
+            .is_some_and(|last| candle.timestamp_ms <= last.timestamp_ms)
+        {
+            continue;
+        }
         candle_buffer.push(candle.clone());
         if candle_buffer.len() > MAX_CANDLE_BUFFER {
             let overflow = candle_buffer.len() - MAX_CANDLE_BUFFER;
@@ -180,9 +215,13 @@ pub async fn live_loop(
             Ok(sig) => sig,
             Err(e) => {
                 warn!("Script evaluation error for {}: {}", symbol, e);
+                status.record_candle(&candle, "hold");
+                flush_status(status);
                 continue;
             }
         };
+        status.record_candle(&candle, signal_name(signal));
+        flush_status(status);
 
         // Skip if no signal
         if signal == omnitrade_script::Signal::Hold {
@@ -212,9 +251,21 @@ pub async fn live_loop(
         {
             Ok(order) => {
                 info!("Order filled: {:?}", order);
+                let side_name = if side == Side::Buy { "buy" } else { "sell" };
+                status.record_order(side_name, order_quantity, candle.close, "placed", "");
+                flush_status(status);
             }
             Err(e) => {
                 warn!("Order rejected by RiskGuard: {}", e);
+                let side_name = if side == Side::Buy { "buy" } else { "sell" };
+                status.record_order(
+                    side_name,
+                    order_quantity,
+                    candle.close,
+                    "rejected",
+                    &e.to_string(),
+                );
+                flush_status(status);
                 // Continue loop; do not halt on single order failure
             }
         }

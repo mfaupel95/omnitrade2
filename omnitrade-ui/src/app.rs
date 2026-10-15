@@ -8,6 +8,7 @@ use omnitrade_core::{Order, Position};
 use omnitrade_engine::L2OrderBook;
 
 use crate::state::UIState;
+use crate::status_feed;
 use crate::widgets::chart::CandleChartWidget;
 use crate::widgets::depth::DepthWidget;
 
@@ -52,6 +53,10 @@ pub struct OmniTradeAppBehavior<'a> {
     pub balances: &'a [(String, f64, f64)],
     /// Open orders reported by the exchange.
     pub orders: &'a [Order],
+    /// Lines for the positions panel (status summary from `--status-file`).
+    pub status_summary: &'a [String],
+    /// Recent orders from the status file, newest first.
+    pub status_orders: &'a [String],
 }
 
 impl<'a> egui_tiles::Behavior<PanelKind> for OmniTradeAppBehavior<'a> {
@@ -72,7 +77,14 @@ impl<'a> egui_tiles::Behavior<PanelKind> for OmniTradeAppBehavior<'a> {
             PanelKind::OrderBook => {
                 self.depth.show(ui, self.orderbook);
             }
-            PanelKind::Positions => show_positions(ui, self.positions, self.balances, self.orders),
+            PanelKind::Positions => show_positions(
+                ui,
+                self.positions,
+                self.balances,
+                self.orders,
+                self.status_summary,
+                self.status_orders,
+            ),
             PanelKind::Console => show_console(ui, self.log),
         }
         egui_tiles::UiResponse::None
@@ -84,6 +96,8 @@ fn show_positions(
     positions: &[Position],
     balances: &[(String, f64, f64)],
     orders: &[Order],
+    status_summary: &[String],
+    status_orders: &[String],
 ) {
     egui::ScrollArea::vertical()
         .auto_shrink([false, false])
@@ -157,6 +171,18 @@ fn show_positions(
                             ui.end_row();
                         }
                     });
+            }
+            ui.separator();
+            ui.strong("Live-Status (Statusdatei)");
+            if status_summary.is_empty() {
+                ui.weak("keine Statusdatei");
+            } else {
+                for line in status_summary {
+                    ui.monospace(line);
+                }
+            }
+            for line in status_orders {
+                ui.monospace(line);
             }
         });
 }
@@ -301,6 +327,22 @@ impl eframe::App for OmniTradeApp {
                 let _ = self.kill_controls(ui);
             });
         });
+        let (status_summary, status_orders) = {
+            let guard = self
+                .state
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            let mut summary = Vec::new();
+            let mut orders = Vec::new();
+            if let Some(doc) = &guard.status {
+                summary = status_feed::summary_lines(doc);
+                orders = status_feed::order_lines(doc);
+            }
+            if let Some(err) = &guard.feed_error {
+                summary.insert(0, format!("feed: {err}"));
+            }
+            (summary, orders)
+        };
 
         let mut behavior = OmniTradeAppBehavior {
             chart: &mut self.chart,
@@ -309,6 +351,8 @@ impl eframe::App for OmniTradeApp {
             positions: &positions,
             log: &log,
             balances: &balances,
+            status_summary: &status_summary,
+            status_orders: &status_orders,
             orders: &orders,
         };
 

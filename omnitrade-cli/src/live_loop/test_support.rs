@@ -188,6 +188,14 @@ impl Harness {
             cancelled: self.cancelled.clone(),
         };
         let script = self.script.to_string_lossy().to_string();
+        let mut status = crate::status::StatusWriter::new(
+            None,
+            "okx",
+            "BTC-USDT",
+            "testnet",
+            "test.omni",
+            1000.0,
+        );
         let config = LiveConfig {
             script_path: &script,
             symbol: "BTCUSDT",
@@ -196,9 +204,11 @@ impl Harness {
             order_quantity: quantity,
             kill_file: &self.kill,
             max_notional: self.cap,
+            interval: "1m",
+            warmup: &[],
         };
         let mut guard = RiskGuard::testnet();
-        live_loop(&config, stream, trading, &mut guard).await
+        live_loop(&config, stream, trading, &mut guard, &mut status).await
     }
 }
 

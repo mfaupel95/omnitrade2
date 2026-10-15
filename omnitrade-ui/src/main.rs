@@ -93,6 +93,8 @@ fn main() -> eframe::Result<()> {
                 "Konto-Anzeige gibt es nur für Binance (gewählt: {exchange})"
             ));
     }
+    let status_path = omnitrade_ui::status_feed::resolve_path(None);
+    omnitrade_ui::status_feed::spawn_poller(status_path, Arc::clone(&state));
     let mut app = OmniTradeApp::with_symbol(state, symbol);
     app.venue = exchange.to_string();
 

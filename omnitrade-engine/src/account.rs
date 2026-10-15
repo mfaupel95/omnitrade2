@@ -128,6 +128,45 @@ impl AccountState {
         fill.fill_quantity - closed
     }
 
+    /// Closes an open position at `price`: realizes PnL, books the proceeds
+    /// (minus `fee_rate`-derived fees) into `balance` and removes the position.
+    /// Returns the realized PnL; `0.0` if no position of that side was open.
+    pub fn close_position_at(
+        &mut self,
+        symbol: &str,
+        side: Side,
+        price: f64,
+        fee_rate: f64,
+    ) -> Result<f64, EngineError> {
+        let key = (symbol.to_string(), side);
+        let Some(pos) = self.positions.get(&key) else {
+            return Ok(0.0);
+        };
+        let qty = pos.quantity;
+        let notional = qty * price;
+        let fee = notional * fee_rate;
+        let net_cash = match side {
+            // Closing a long sells inventory: proceeds come in.
+            Side::Buy => notional - fee,
+            // Closing a short buys it back: cost goes out.
+            Side::Sell => -notional - fee,
+        };
+        if self.balance + net_cash < 0.0 {
+            return Err(EngineError::InsufficientBalance {
+                required: -net_cash,
+                available: self.balance,
+            });
+        }
+        let pnl = match side {
+            Side::Buy => (price - pos.entry_price) * qty,
+            Side::Sell => (pos.entry_price - price) * qty,
+        };
+        self.balance += net_cash;
+        self.total_fees_paid += fee;
+        self.positions.remove(&key);
+        Ok(pnl)
+    }
+
     /// Returns a reference to a specific position (symbol, side).
     #[must_use]
     pub fn get_position(&self, symbol: &str, side: Side) -> Option<&Position> {
@@ -343,5 +382,69 @@ mod tests {
         assert!(acc.positions.is_empty());
         assert!((acc.total_equity() - acc.balance).abs() < 1e-9);
         assert!((acc.total_pnl() - 200.0).abs() < 1e-9);
+    }
+
+    /// T-287/T-292: das Guthaben allein ist nach einem Kauf fast leer - die
+    /// Equity darf trotzdem nicht einbrechen, solange die Position steht.
+    #[test]
+    fn test_equity_haelt_den_positionswert() {
+        let mut acc = AccountState::new(100_000.0).expect("account");
+        let buy = OrderFill::new(
+            1,
+            "BTCUSDT".to_string(),
+            Side::Buy,
+            50_000.0,
+            1.0,
+            0.0,
+            "USDT".to_string(),
+            1000,
+            false,
+        );
+        acc.apply_fill(&buy).expect("buy");
+        assert_eq!(acc.balance, 50_000.0, "Nennwert ist vom Guthaben weg");
+        assert_eq!(
+            acc.total_equity(),
+            100_000.0,
+            "Equity unveraendert beim Kauf"
+        );
+
+        // Kurs faellt 10 %: Equity folgt dem Marktwert, nicht dem Guthaben.
+        acc.update_unrealized_pnl("BTCUSDT", Side::Buy, 45_000.0)
+            .expect("mark");
+        assert_eq!(acc.total_equity(), 95_000.0);
+        assert_eq!(acc.total_pnl(), -5_000.0);
+    }
+
+    /// Ein Short ist ein Mittelzufluss im Guthaben - der Gegenwert muss als
+    /// NEGATIVER Positionswert gegengerechnet werden.
+    #[test]
+    fn test_equity_bei_short_zieht_den_positionswert_ab() {
+        let mut acc = AccountState::new(100_000.0).expect("account");
+        let sell = OrderFill::new(
+            1,
+            "BTCUSDT".to_string(),
+            Side::Sell,
+            50_000.0,
+            1.0,
+            0.0,
+            "USDT".to_string(),
+            1000,
+            false,
+        );
+        acc.apply_fill(&sell).expect("sell");
+        assert_eq!(acc.balance, 150_000.0, "Short bucht den Nennwert zu");
+        assert_eq!(
+            acc.total_equity(),
+            100_000.0,
+            "Equity unveraendert beim Short"
+        );
+
+        acc.update_unrealized_pnl("BTCUSDT", Side::Sell, 55_000.0)
+            .expect("mark");
+        assert_eq!(
+            acc.total_equity(),
+            95_000.0,
+            "Short verliert, wenn der Kurs steigt"
+        );
     }
 }

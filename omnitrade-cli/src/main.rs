@@ -9,6 +9,7 @@ mod commands;
 mod grid_loop;
 mod kill_switch;
 mod live_loop;
+mod status;
 
 use args::{CliArgs, Commands};
 use backtest::{run_backtest, BacktestConfig};
@@ -36,8 +37,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             initial_balance,
             fee_rate,
             slippage_bps,
+            quantity,
         } => {
-            let config = BacktestConfig::new(script, data, initial_balance, fee_rate, slippage_bps);
+            let config = BacktestConfig::new(
+                script,
+                data,
+                initial_balance,
+                fee_rate,
+                slippage_bps,
+                quantity,
+            );
 
             let result = run_backtest(&config)?;
             println!("=== Backtest Results ===");
@@ -63,6 +72,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             quantity,
             max_notional_usd,
             confirm_real_money,
+            status_file,
+            interval,
         } => {
             let capital = initial_capital.unwrap_or(1000.0);
             handle_live(&LiveArgs {
@@ -75,6 +86,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 order_quantity: quantity,
                 max_notional_usd,
                 confirm_real_money,
+                status_file: status_file.as_deref(),
+                interval: &interval,
             })
             .await?;
         }

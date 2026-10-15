@@ -5,6 +5,7 @@ pub mod app;
 pub mod feed;
 pub mod kill;
 pub mod state;
+pub mod status_feed;
 pub mod widgets;
 
 pub use app::{OmniTradeApp, PanelKind};
