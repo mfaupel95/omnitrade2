@@ -9,7 +9,7 @@
 use omnitrade_core::Side;
 use omnitrade_exchange::{ApiCredentials, ExchangeTrading, Network, OkxRestClient, OrderRequest};
 
-const SYMBOL: &str = "BTC-USDT";
+const DEFAULT_SYMBOL: &str = "BTC-USDT";
 const QTY: f64 = 0.001;
 
 fn env(name: &str) -> String {
@@ -21,13 +21,20 @@ fn env(name: &str) -> String {
 
 #[tokio::main]
 async fn main() {
-    let mode = std::env::args().nth(1).unwrap_or_else(|| "balance".into());
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let mode = args.first().map_or("balance", String::as_str);
+    let symbol = args.get(1).map_or(DEFAULT_SYMBOL, String::as_str);
     let creds = ApiCredentials::new(
         env("OKX_API_KEY"),
         env("OKX_API_SECRET"),
         Network::Testnet, // Demo: sendet x-simulated-trading: 1, niemals echtes Geld
     );
-    let client = OkxRestClient::new(creds, env("OKX_PASSPHRASE")).expect("client");
+    let mut client = OkxRestClient::new(creds, env("OKX_PASSPHRASE")).expect("client");
+    // EEA/US-Demo-Konten liegen auf ihrer eigenen API-Domain, z. B. OKX_REST_BASE=https://eea.okx.com
+    if let Ok(base) = std::env::var("OKX_REST_BASE") {
+        println!("API-Domain: {base}");
+        client = client.with_base_url(base);
+    }
 
     let account = match client.get_balance().await {
         Ok(a) => a,
@@ -41,12 +48,21 @@ async fn main() {
         "Demo-Konto lesbar: {} Assets, USDT {usdt:.2}",
         account.balances.len()
     );
+    let mut held: Vec<_> = account
+        .balances
+        .iter()
+        .filter(|(_, b)| b.total() > 0.0)
+        .collect();
+    held.sort_by(|a, b| a.0.cmp(b.0));
+    for (ccy, b) in held {
+        println!("  {ccy}: frei {:.8}, gesperrt {:.8}", b.free, b.locked);
+    }
     if mode != "trade" {
         return;
     }
 
     // 1) Limit-Order weit unter dem Markt anlegen, abfragen, stornieren.
-    let limit = OrderRequest::limit(SYMBOL.into(), Side::Buy, QTY, 10_000.0);
+    let limit = OrderRequest::limit(symbol.into(), Side::Buy, QTY, 10_000.0);
     let order = client.place_order(&limit).await.expect("limit order");
     println!("Limit-Order angelegt: id={}", order.id);
     let open = client.get_open_orders().await.expect("open orders");
@@ -56,23 +72,23 @@ async fn main() {
         open.iter().any(|o| o.id == order.id)
     );
     client
-        .cancel_order(&order.id.to_string(), SYMBOL)
+        .cancel_order(&order.id.to_string(), symbol)
         .await
         .expect("cancel");
     let after = client
-        .get_order(&order.id.to_string(), SYMBOL)
+        .get_order(&order.id.to_string(), symbol)
         .await
         .expect("get_order");
     println!("nach Storno: {:?}", after.map(|o| o.status));
 
     // 2) Market-Kauf und Rückverkauf.
     let buy = client
-        .place_order(&OrderRequest::market(SYMBOL.into(), Side::Buy, QTY))
+        .place_order(&OrderRequest::market(symbol.into(), Side::Buy, QTY))
         .await
         .expect("market buy");
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     let filled = client
-        .get_order(&buy.id.to_string(), SYMBOL)
+        .get_order(&buy.id.to_string(), symbol)
         .await
         .expect("get_order");
     println!(
@@ -82,7 +98,7 @@ async fn main() {
         filled.as_ref().map(|o| o.filled_quantity)
     );
     let sell = client
-        .place_order(&OrderRequest::market(SYMBOL.into(), Side::Sell, QTY))
+        .place_order(&OrderRequest::market(symbol.into(), Side::Sell, QTY))
         .await
         .expect("market sell");
     println!("Rückverkauf angelegt: id={}", sell.id);

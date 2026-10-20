@@ -118,7 +118,7 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
         if grid_config_path.is_some() {
             return Err("Grid-Live auf Mainnet ist gesperrt (nur Testnet)".into());
         }
-        if is_swap_symbol(symbol) {
+        if is_contract_symbol(symbol) {
             return Err(
                 "SWAP (Perpetual) auf Mainnet ist gesperrt, bis die Demo-Verifikation abgeschlossen ist"
                     .into(),
@@ -249,7 +249,7 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
                     info!("OKX-API-Domain: {base}");
                     trading_client = trading_client.with_base_url(base);
                 }
-                if is_swap_symbol(symbol) {
+                if is_contract_symbol(symbol) {
                     prepare_okx_swap(&trading_client, symbol).await?;
                 }
 
@@ -352,9 +352,20 @@ fn okx_region_is_eea() -> Result<bool, Box<dyn std::error::Error>> {
     }
 }
 
-/// Erkennt SWAP-Symbole (`BTC-USDT-SWAP`).
-fn is_swap_symbol(symbol: &str) -> bool {
-    symbol.to_uppercase().ends_with("-SWAP")
+/// Erkennt kontraktbasierte OKX-Symbole: SWAP (`BTC-USDT-SWAP`) und
+/// XPERP (`BTC-USD_UM_XPERP-310404`). EEA-Konten handeln nur XPERP.
+fn is_contract_symbol(symbol: &str) -> bool {
+    let up = symbol.to_uppercase();
+    up.ends_with("-SWAP") || up.contains("_XPERP-")
+}
+
+/// InstType für ein kontraktbasiertes Symbol: XPERP -> Futures, sonst Swap.
+fn inst_type_for_symbol(symbol: &str) -> InstType {
+    if symbol.to_uppercase().contains("_XPERP-") {
+        InstType::Futures
+    } else {
+        InstType::Swap
+    }
 }
 
 /// Hebel aus `OKX_LEVERAGE` (Default 1, Deckel [`swap::MAX_LEVERAGE`]).
@@ -387,16 +398,18 @@ async fn prepare_okx_swap(
     let symbol = symbol.to_uppercase();
     let lever = okx_leverage()?;
     client.ensure_net_mode().await?;
-    let inst = client.load_instrument(&symbol, InstType::Swap).await?;
+    let inst_type = inst_type_for_symbol(&symbol);
+    let inst = client.load_instrument(&symbol, inst_type).await?;
     info!(
-        "SWAP {symbol}: ctVal {} {}, lotSz {}, minSz {} Kontrakte",
+        "{} {symbol}: ctVal {} {}, lotSz {}, minSz {} Kontrakte",
+        inst_type.as_api_str(),
         inst.ct_val,
         symbol.split('-').next().unwrap_or(""),
         inst.lot_sz,
         inst.min_sz
     );
     client.set_leverage(&symbol, lever).await?;
-    info!("SWAP {symbol}: isolated, one-way, Hebel {lever}x");
+    info!("{symbol}: isolated, one-way, Hebel {lever}x");
     Ok(())
 }
 
@@ -558,9 +571,13 @@ mod tests {
 
     #[test]
     fn swap_symbols_are_detected_case_insensitively() {
-        assert!(is_swap_symbol("BTC-USDT-SWAP"));
-        assert!(is_swap_symbol("btc-usdt-swap"));
-        assert!(!is_swap_symbol("BTC-USDT"));
+        assert!(is_contract_symbol("BTC-USDT-SWAP"));
+        assert!(is_contract_symbol("btc-usdt-swap"));
+        assert!(is_contract_symbol("BTC-USD_UM_XPERP-310404"));
+        assert!(is_contract_symbol("btc-usd_um_xperp-310404"));
+        assert!(!is_contract_symbol("BTC-USDT"));
+        assert_eq!(inst_type_for_symbol("BTC-USD_UM_XPERP-310404"), InstType::Futures);
+        assert_eq!(inst_type_for_symbol("BTC-USDT-SWAP"), InstType::Swap);
     }
 
     #[tokio::test]

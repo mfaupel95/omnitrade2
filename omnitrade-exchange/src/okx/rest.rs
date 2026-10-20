@@ -16,7 +16,7 @@ use serde_json::{json, Value};
 use crate::credentials::{ApiCredentials, Network};
 use crate::error::ExchangeError;
 use crate::okx::signing::{iso_timestamp, OkxSigner};
-use crate::okx::swap_client::{is_swap_id, InstrumentCache};
+use crate::okx::swap_client::{is_contract_id, InstrumentCache};
 use crate::trading::{Account, AccountBalance, ExchangeTrading, OrderRequest, PositionSnapshot};
 
 const BASE_URL: &str = "https://www.okx.com";
@@ -247,7 +247,7 @@ impl ExchangeTrading for OkxRestClient {
                 )))
             }
         };
-        let body = if is_swap_id(&req.symbol) {
+        let body = if is_contract_id(&req.symbol) {
             self.swap_order_body(req, px)?
         } else {
             let mut body = json!({
@@ -343,7 +343,7 @@ impl ExchangeTrading for OkxRestClient {
     }
 
     async fn position_snapshot(&self, symbol: &str) -> Result<PositionSnapshot, ExchangeError> {
-        if is_swap_id(symbol) {
+        if is_contract_id(symbol) {
             self.fetch_swap_position(symbol).await
         } else {
             Ok(PositionSnapshot::default())

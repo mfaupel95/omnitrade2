@@ -17,6 +17,10 @@ const ROUNDING_EPS: f64 = 1e-9;
 pub enum InstType {
     Spot,
     Swap,
+    /// XPERP-Perpetual (instType=FUTURES), z. B. `BTC-USD_UM_XPERP-310404`.
+    /// Mechanisch identisch zu SWAP (Kontrakte, ctVal/lotSz/minSz), nur andere
+    /// instType-Kennung und ID-Format. EEA-Konten handeln ausschliesslich XPERP.
+    Futures,
 }
 
 impl InstType {
@@ -26,7 +30,15 @@ impl InstType {
         match self {
             Self::Spot => "SPOT",
             Self::Swap => "SWAP",
+            Self::Futures => "FUTURES",
         }
+    }
+
+    /// `true` für kontraktbasierte Instrumente (SWAP und XPERP/FUTURES), deren
+    /// Menge in Kontrakten angegeben wird. SPOT rechnet in Basiswährung.
+    #[must_use]
+    pub fn is_contract_based(self) -> bool {
+        matches!(self, Self::Swap | Self::Futures)
     }
 }
 
@@ -53,6 +65,7 @@ impl Instrument {
         let inst_type = match text_field(v, "instType")?.as_str() {
             "SPOT" => InstType::Spot,
             "SWAP" => InstType::Swap,
+            "FUTURES" => InstType::Futures,
             other => {
                 return Err(ExchangeError::ApiError(format!(
                     "{inst_id}: unbekannter instType '{other}'"
@@ -60,7 +73,7 @@ impl Instrument {
             }
         };
         let ct_val = match inst_type {
-            InstType::Swap => number_field(v, "ctVal")?,
+            InstType::Swap | InstType::Futures => number_field(v, "ctVal")?,
             InstType::Spot => 1.0,
         };
         let instrument = Self {
@@ -96,9 +109,9 @@ impl Instrument {
     /// `InvalidRequest` bei SPOT-Instrumenten, bei nicht-positiver Menge oder wenn
     /// das Ergebnis unter `min_sz` liegt (fail closed statt stillem Auffüllen).
     pub fn base_to_contracts(&self, base_qty: f64) -> Result<f64, ExchangeError> {
-        if self.inst_type != InstType::Swap {
+        if matches!(self.inst_type, InstType::Spot) {
             return Err(ExchangeError::InvalidRequest(format!(
-                "{}: Kontraktumrechnung nur für SWAP",
+                "{}: Kontraktumrechnung nur für SWAP/XPERP",
                 self.inst_id
             )));
         }
@@ -204,6 +217,30 @@ mod tests {
     fn contracts_convert_back_to_base() {
         let inst = btc_swap();
         assert!((inst.contracts_to_base(5.0) - 0.05).abs() < 1e-12);
+    }
+
+    /// Echte Antwort von `eea.okx.com/api/v5/public/instruments?instType=FUTURES&instId=BTC-USD_UM_XPERP-310404`.
+    fn btc_xperp() -> Instrument {
+        let json = serde_json::json!({
+            "instId": "BTC-USD_UM_XPERP-310404", "instType": "FUTURES", "ctVal": "0.0001",
+            "ctValCcy": "BTC", "lotSz": "1", "minSz": "1", "ctType": "linear",
+        });
+        Instrument::parse(&json).expect("fixture parses")
+    }
+
+    #[test]
+    fn parses_xperp_futures_fields_and_converts_contracts() {
+        // Arrange
+        let inst = btc_xperp();
+        // Assert: instType FUTURES, ctVal 0.0001 BTC je Kontrakt
+        assert_eq!(inst.inst_type, InstType::Futures);
+        assert!(inst.inst_type.is_contract_based());
+        assert_eq!(inst.ct_val, 0.0001);
+        // Act: 0.0003 BTC = 3 Kontrakte
+        let c = inst.base_to_contracts(0.0003).expect("valid size");
+        // Assert
+        assert!((c - 3.0).abs() < 1e-9);
+        assert!((inst.contracts_to_base(3.0) - 0.0003).abs() < 1e-12);
     }
 
     #[test]

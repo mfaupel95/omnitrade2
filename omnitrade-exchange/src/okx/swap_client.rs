@@ -61,10 +61,12 @@ fn optional_number(item: &Value, key: &str) -> Result<f64, ExchangeError> {
         .ok_or_else(|| ExchangeError::AccountError(format!("Feld '{key}' ist keine Zahl: '{raw}'")))
 }
 
-/// Erkennt SWAP-Instrumente an der OKX-Notation `BTC-USDT-SWAP`.
+/// Erkennt kontraktbasierte Instrumente an der OKX-Notation:
+/// SWAP (`BTC-USDT-SWAP`) und XPERP (`BTC-USD_UM_XPERP-310404`).
 #[must_use]
-pub(crate) fn is_swap_id(inst_id: &str) -> bool {
-    inst_id.ends_with("-SWAP")
+pub(crate) fn is_contract_id(inst_id: &str) -> bool {
+    let up = inst_id.to_uppercase();
+    up.ends_with("-SWAP") || up.contains("_XPERP-")
 }
 
 /// Cache der Instrumentregeln, befüllt durch [`OkxRestClient::load_instrument`].
@@ -132,10 +134,10 @@ impl OkxRestClient {
             .get(inst_id)
             .cloned();
         cached
-            .filter(|i| i.inst_type == InstType::Swap)
+            .filter(|i| i.inst_type.is_contract_based())
             .ok_or_else(|| {
                 ExchangeError::InvalidRequest(format!(
-                    "{inst_id}: SWAP-Instrument nicht geladen (load_instrument zuerst)"
+                    "{inst_id}: SWAP/XPERP-Instrument nicht geladen (load_instrument zuerst)"
                 ))
             })
     }
@@ -160,7 +162,8 @@ impl OkxRestClient {
     ) -> Result<PositionSnapshot, ExchangeError> {
         let inst = self.swap_instrument(inst_id)?;
         let path = format!(
-            "/api/v5/account/positions?instType=SWAP&instId={}",
+            "/api/v5/account/positions?instType={}&instId={}",
+            inst.inst_type.as_api_str(),
             urlencoding::encode(inst_id)
         );
         let data = self.call(Method::GET, &path, None).await?;
@@ -169,7 +172,7 @@ impl OkxRestClient {
 
     /// Rechnet Kontraktmengen einer SWAP-Order in Basiswährung zurück. SPOT bleibt unberührt.
     pub(crate) fn to_base_units(&self, mut order: Order) -> Result<Order, ExchangeError> {
-        if !is_swap_id(&order.symbol) {
+        if !is_contract_id(&order.symbol) {
             return Ok(order);
         }
         let inst = self.swap_instrument(&order.symbol)?;
@@ -255,6 +258,37 @@ mod tests {
         let snap = parse_swap_position(&data, &btc_swap()).expect("parses");
         assert_eq!(snap.liq_price, None);
         assert_eq!(snap.mark_price, None);
+    }
+
+    #[test]
+    fn contract_id_recognizes_swap_and_xperp() {
+        assert!(is_contract_id("BTC-USDT-SWAP"));
+        assert!(is_contract_id("BTC-USD_UM_XPERP-310404"));
+        assert!(is_contract_id("btc-usd_um_xperp-310404"));
+        assert!(!is_contract_id("BTC-USDT"));
+        assert!(!is_contract_id("BTC-USDC"));
+    }
+
+    #[test]
+    fn xperp_position_parses_like_swap() {
+        // Arrange: 3 Kontrakte long, ctVal 0.0001 -> 0.0003 BTC
+        let inst = Instrument::parse(&json!({
+            "instId": "BTC-USD_UM_XPERP-310404", "instType": "FUTURES", "ctVal": "0.0001",
+            "lotSz": "1", "minSz": "1",
+        }))
+        .expect("fixture parses");
+        let data = [json!({
+            "instId": "BTC-USD_UM_XPERP-310404", "pos": "3", "upl": "1.5",
+            "liqPx": "45000.5", "markPx": "50000"
+        })];
+        // Act
+        let snap = parse_swap_position(&data, &inst).expect("parses");
+        // Assert
+        assert!(snap.is_perpetual);
+        assert!((snap.base_qty - 0.0003).abs() < 1e-12);
+        assert!((snap.unrealized_pnl - 1.5).abs() < 1e-12);
+        assert_eq!(snap.liq_price, Some(45_000.5));
+        assert_eq!(snap.mark_price, Some(50_000.0));
     }
 
     #[test]
