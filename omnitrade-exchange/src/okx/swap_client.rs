@@ -142,15 +142,21 @@ impl OkxRestClient {
             })
     }
 
-    /// Baut den Order-Body für SWAP. Die Menge wird auf Kontrakte gerundet, bevor sie
-    /// den Adapter verlässt.
+    /// Baut den Order-Body für SWAP/XPERP. Die Menge wird auf Kontrakte gerundet, bevor sie
+    /// den Adapter verlässt. Für SWAP ist quantity Base-Währung; für XPERP (Futures) Kontrakte.
     pub(crate) fn swap_order_body(
         &self,
         req: &OrderRequest,
         px: Option<f64>,
     ) -> Result<Value, ExchangeError> {
         let inst = self.swap_instrument(&req.symbol)?;
-        let contracts = inst.base_to_contracts(req.quantity)?;
+        let contracts = if inst.inst_type.is_contract_based() && inst.inst_type != InstType::Swap {
+            // XPERP (Futures): quantity is already in contracts (ctVal in settlement currency)
+            req.quantity
+        } else {
+            // SWAP: quantity is in base currency, convert using ctVal
+            inst.base_to_contracts(req.quantity)?
+        };
         let text = swap::format_contracts(contracts, inst.lot_sz);
         Ok(swap::order_body(req, &text, px))
     }
@@ -267,6 +273,36 @@ mod tests {
         assert!(is_contract_id("btc-usd_um_xperp-310404"));
         assert!(!is_contract_id("BTC-USDT"));
         assert!(!is_contract_id("BTC-USDC"));
+    }
+
+    /// Echter Demo-End-to-End-Test: XPERP-Instrument laden (braucht Env-Variablen
+    /// OKX_DEMO_API_KEY/SECRET/PASSPHRASE und OKX_REST_BASE=https://eea.okx.com).
+    /// Wird nur ausgeführt, wenn alle Env-Variablen gesetzt sind.
+    #[test]
+    #[ignore]
+    fn demo_xperp_load_instrument() {
+        use crate::{ApiCredentials, Network, OkxRestClient};
+        let key = std::env::var("OKX_DEMO_API_KEY").ok();
+        let secret = std::env::var("OKX_DEMO_API_SECRET").ok();
+        let pass = std::env::var("OKX_DEMO_API_PASSPHRASE").ok();
+        let base = std::env::var("OKX_REST_BASE").ok();
+        let (Some(key), Some(secret), Some(pass), Some(base)) = (key, secret, pass, base) else {
+            eprintln!("Demo-Env nicht gesetzt, Test übersprungen");
+            return;
+        };
+        eprintln!("DEBUG_TEST: key={}... secret={}... pass={}... base={}", 
+        &key[..8.min(key.len())], &secret[..8.min(secret.len())], 
+        &pass[..8.min(pass.len())], base);
+    let creds = ApiCredentials::new(key, secret, Network::Testnet);
+    let mut client = OkxRestClient::new(creds, pass).expect("client");
+        client = client.with_base_url(base);
+        eprintln!("DEBUG_TEST: calling load_instrument with BTC-USD-261030, Futures");
+    let inst = tokio_test::block_on(client.load_instrument("BTC-USD-261030", InstType::Futures))
+            .expect("load_instrument");
+        assert_eq!(inst.inst_type, InstType::Futures);
+        assert!(inst.inst_type.is_contract_based());
+        eprintln!("ct_val={}", inst.ct_val); assert!(inst.ct_val > 0.0);
+        eprintln!("OK: geladen {} ctVal={}", inst.inst_id, inst.ct_val);
     }
 
     #[test]

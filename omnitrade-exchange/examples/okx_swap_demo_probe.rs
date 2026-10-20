@@ -1,6 +1,6 @@
 //! SWAP (Perpetual) demo verification against OKX EEA demo trading.
 //!
-//! Credentials from `OKX_API_KEY`, `OKX_API_SECRET`, `OKX_PASSPHRASE` (demo keys),
+//! Credentials `OKX_DEMO_API_KEY` `OKX_DEMO_API_SECRET` `OKX_DEMO_API_PASSPHRASE` (demo keys),
 //! `OKX_REST_BASE=https://eea.okx.com` for EEA demo accounts.
 //! Usage: `cargo run -p omnitrade-exchange --example okx_swap_demo_probe -- [SYMBOL] [QTY_BASE]`
 //!
@@ -32,19 +32,23 @@ async fn main() {
         .get(1)
         .and_then(|s| s.parse().ok())
         .unwrap_or(DEFAULT_QTY_BASE);
-    // XPERP (instType=FUTURES) vs SWAP: EEA-Konten handeln nur XPERP.
-    let inst_type = if symbol.to_uppercase().contains("_XPERP-") {
-        InstType::Futures
-    } else {
-        InstType::Swap
-    };
+    // XPERP (instType=FUTURES) not SWAP: EEA accounts only trade XPERP.
+    // For demo, force Futures for BTC-USD-* / ETH-USD-* symbols (XPERP format).
+        let inst_type = if symbol.starts_with("BTC-USD-") || symbol.starts_with("ETH-USD-") || symbol.to_uppercase().contains("_XPERP-") {
+            InstType::Futures
+        } else {
+            InstType::Swap
+        };
 
     let creds = ApiCredentials::new(
-        env("OKX_API_KEY"),
-        env("OKX_API_SECRET"),
-        Network::Testnet, // Demo: x-simulated-trading: 1, niemals echtes Geld
-    );
-    let mut client = OkxRestClient::new(creds, env("OKX_PASSPHRASE")).expect("client");
+            env("OKX_DEMO_API_KEY"),
+            env("OKX_DEMO_API_SECRET"),
+            Network::Testnet, //Demo: x-simulated-trading: 1, niemals echtes Geld
+        );
+        eprintln!("DEBUG_PROBE: key={}... secret={}... pass={}... inst_type={:?} symbol={}", 
+            &env("OKX_DEMO_API_KEY")[..8], &env("OKX_DEMO_API_SECRET")[..8], 
+            &env("OKX_DEMO_API_PASSPHRASE")[..8], inst_type, symbol);
+        let mut client = OkxRestClient::new(creds, env("OKX_DEMO_API_PASSPHRASE")).expect("client");
     if let Ok(base) = std::env::var("OKX_REST_BASE") {
         println!("API-Domain: {base}");
         client = client.with_base_url(base);
@@ -69,11 +73,13 @@ async fn main() {
     println!("ensure_net_mode ok (one-way)");
 
     // 4) Kleine Market-Buy-Order.
-    let buy = client
-        .place_order(&OrderRequest::market(symbol.into(), Side::Buy, qty_base))
-        .await
-        .expect("market buy");
-    println!("Market-Buy angelegt: id={} (Basis {qty_base})", buy.id);
+        // For XPERP (Futures), qty_base is interpreted as contract quantity directly
+        // because swap_order_body now handles Futures vs SWAP conversion.
+        let buy = client
+            .place_order(&OrderRequest::market(symbol.into(), Side::Buy, qty_base))
+            .await
+            .expect("market buy");
+        println!("Market-Buy angelegt: id={} (qty={})", buy.id, qty_base);
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
     // 5) Positionsantwort lesen (pos/upl/liqPx/markPx).
@@ -86,12 +92,12 @@ async fn main() {
         pos.base_qty, pos.unrealized_pnl, pos.liq_price, pos.mark_price
     );
 
-    // 6) Schließen: gleiche Basis-Menge zurückverkaufen.
-    let sell = client
-        .place_order(&OrderRequest::market(symbol.into(), Side::Sell, qty_base))
-        .await
-        .expect("market sell");
-    println!("Market-Sell angelegt: id={}", sell.id);
+    // 6) Schließen: gleiche Menge zurückverkaufen.
+        let sell = client
+            .place_order(&OrderRequest::market(symbol.into(), Side::Sell, qty_base))
+            .await
+            .expect("market sell");
+        println!("Market-Sell angelegt: id={}", sell.id);
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     let after = client
         .position_snapshot(symbol)

@@ -24,3 +24,6 @@ keyring.workspace = true
 hex.workspace = true
 base64 = "0.22"
 urlencoding.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4.6"

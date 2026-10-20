@@ -247,24 +247,34 @@ impl ExchangeTrading for OkxRestClient {
                 )))
             }
         };
-        let body = if is_contract_id(&req.symbol) {
-            self.swap_order_body(req, px)?
-        } else {
-            let mut body = json!({
-                "instId": req.symbol,
-                "tdMode": "cash",
-                "side": if req.side == Side::Buy { "buy" } else { "sell" },
-                "ordType": ord_type,
-                "sz": req.quantity.to_string(),
-            });
-            if let Some(price) = px {
-                body["px"] = json!(price.to_string());
-            } else {
-                // Without this, a market buy's size would be read as quote currency.
-                body["tgtCcy"] = json!("base_ccy");
-            }
-            body
-        };
+        let body = {
+                // Prefer cached instrument type; fall back to symbol heuristic.
+                let is_contract = self
+                    .instruments
+                    .read()
+                    .ok()
+                    .and_then(|c| c.get(&req.symbol).cloned())
+                    .map(|i| i.inst_type.is_contract_based())
+                    .unwrap_or_else(|| is_contract_id(&req.symbol));
+                if is_contract {
+                    self.swap_order_body(req, px)?
+                } else {
+                    let mut body = json!({
+                        "instId": req.symbol,
+                        "tdMode": "cash",
+                        "side": if req.side == Side::Buy { "buy" } else { "sell" },
+                        "ordType": ord_type,
+                        "sz": req.quantity.to_string(),
+                    });
+                    if let Some(price) = px {
+                        body["px"] = json!(price.to_string());
+                    } else {
+                        // Without this, market buy's size is read as quote currency.
+                        body["tgtCcy"] = json!("base_ccy");
+                    }
+                    body
+                }
+            };
         let data = self
             .call(Method::POST, "/api/v5/trade/order", Some(&body))
             .await?;
