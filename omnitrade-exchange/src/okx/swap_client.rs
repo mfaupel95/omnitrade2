@@ -126,6 +126,27 @@ impl OkxRestClient {
         swap::check_position_mode(&data)
     }
 
+    /// Abrechnungswaehrung des KONTOS (`settleCcy` aus `/account/config`).
+    ///
+    /// Diese Waehrung ist die Wahrheit fuer die Equity-Bewertung: bei XPERP sagt
+    /// das Instrument `settleCcy: USD`, waehrend dasselbe Konto in USDC abrechnet
+    /// (gemessen an eea.okx.com am 21.10.2026: acctLv 2, settleCcy USDC). Wer dem
+    /// Instrument glaubt, findet im Kontostand keinen Bestand und bewertet mit 0.
+    ///
+    /// # Errors
+    /// API-Fehler beim Lesen der Kontokonfiguration; `None`, wenn das Feld fehlt.
+    pub async fn account_settle_ccy(&self) -> Result<Option<String>, ExchangeError> {
+        let data = self
+            .call(Method::GET, "/api/v5/account/config", None)
+            .await?;
+        Ok(data
+            .first()
+            .and_then(|v| v.get("settleCcy"))
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.is_empty())
+            .map(str::to_string))
+    }
+
     /// Liefert die gecachte SWAP-Regel oder einen Fehler mit Handlungsanweisung.
     pub(crate) fn swap_instrument(&self, inst_id: &str) -> Result<Instrument, ExchangeError> {
         let cached = self
@@ -210,11 +231,7 @@ mod tests {
 
     fn seeded_client(inst: &Instrument) -> OkxRestClient {
         use crate::{ApiCredentials, Network};
-        let creds = ApiCredentials::new(
-            "key".to_string(),
-            "secret".to_string(),
-            Network::Testnet,
-        );
+        let creds = ApiCredentials::new("key".to_string(), "secret".to_string(), Network::Testnet);
         let client = OkxRestClient::new(creds, "passphrase".to_string()).expect("client");
         client
             .instruments

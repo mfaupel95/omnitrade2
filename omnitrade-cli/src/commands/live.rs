@@ -17,7 +17,7 @@ use omnitrade_risk::limits::RiskLimits;
 use omnitrade_script::GridConfig;
 use std::path::Path;
 use std::time::Duration;
-use tracing::info;
+use tracing::{info, warn};
 
 /// Abstand der Fill-Abfragen im Grid-Betrieb.
 const GRID_POLL_SECS: u64 = 5;
@@ -427,9 +427,24 @@ async fn prepare_okx_swap(
         inst.min_sz,
         inst.settle_ccy.as_deref().unwrap_or("(nicht angegeben)")
     );
+    // Die Abrechnungswaehrung des KONTOS schlaegt die des Instruments: bei XPERP
+    // sagt das Instrument `USD`, das Konto rechnet in USDC ab. Ohne diese
+    // Reihenfolge faellt die Equity auf den uPnL zusammen (Drawdown in Millionen).
+    let konto_settle = match client.account_settle_ccy().await {
+        Ok(ccy) => ccy,
+        Err(e) => {
+            warn!("Kontokonfiguration nicht lesbar ({e}) - nehme die des Instruments");
+            None
+        }
+    };
+    let settle = konto_settle.or(inst.settle_ccy);
+    info!(
+        "{symbol}: Equity-Bewertung in {}",
+        settle.as_deref().unwrap_or("(Quote des Symbols)")
+    );
     client.set_leverage(&symbol, lever).await?;
     info!("{symbol}: isolated, one-way, Hebel {lever}x");
-    Ok(inst.settle_ccy)
+    Ok(settle)
 }
 
 /// OKX-Zugänge: Keystore (`omnitrade/okx/<netzwerk>`) hat Vorrang, sonst
