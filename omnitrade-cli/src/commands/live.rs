@@ -362,20 +362,17 @@ fn okx_region_is_eea() -> Result<bool, Box<dyn std::error::Error>> {
     }
 }
 
-/// Erkennt kontraktbasierte OKX-Symbole: SWAP (`BTC-USDT-SWAP`) und
-/// XPERP (`BTC-USD_UM_XPERP-310404`). EEA-Konten handeln nur XPERP.
+/// Erkennt kontraktbasierte OKX-Symbole: SWAP (`BTC-USDT-SWAP`), XPERP
+/// (`BTC-USD_UM_XPERP-310404`) und datierte Futures (`BTC-USD_UM-261030`).
+/// Die Regel steht EINMAL im Exchange-Crate.
 fn is_contract_symbol(symbol: &str) -> bool {
-    let up = symbol.to_uppercase();
-    up.ends_with("-SWAP") || up.contains("_XPERP-")
+    omnitrade_exchange::okx::instrument::is_contract_id(symbol)
 }
 
-/// InstType für ein kontraktbasiertes Symbol: XPERP -> Futures, sonst Swap.
+/// InstType für ein kontraktbasiertes Symbol: XPERP und datierte Futures ->
+/// Futures, SWAP -> Swap. Unbekanntes bleibt Swap (bisheriges Verhalten).
 fn inst_type_for_symbol(symbol: &str) -> InstType {
-    if symbol.to_uppercase().contains("_XPERP-") {
-        InstType::Futures
-    } else {
-        InstType::Swap
-    }
+    omnitrade_exchange::okx::instrument::inst_type_for_symbol(symbol).unwrap_or(InstType::Swap)
 }
 
 /// Hebel aus `OKX_LEVERAGE` (Default 1, Deckel [`swap::MAX_LEVERAGE`]).
@@ -585,8 +582,17 @@ mod tests {
         assert!(is_contract_symbol("btc-usdt-swap"));
         assert!(is_contract_symbol("BTC-USD_UM_XPERP-310404"));
         assert!(is_contract_symbol("btc-usd_um_xperp-310404"));
+        // Datierte Futures (einziger auf dem EEA-Demokonto handelbarer Typ)
+        assert!(is_contract_symbol("BTC-USD_UM-261030"));
+        assert!(is_contract_symbol("btc-usd_um-261030"));
+        assert!(is_contract_symbol("BTC-USD-261030"));
         assert!(!is_contract_symbol("BTC-USDT"));
-        assert_eq!(inst_type_for_symbol("BTC-USD_UM_XPERP-310404"), InstType::Futures);
+        assert_eq!(
+            inst_type_for_symbol("BTC-USD_UM_XPERP-310404"),
+            InstType::Futures
+        );
+        assert_eq!(inst_type_for_symbol("BTC-USD_UM-261030"), InstType::Futures);
+        assert_eq!(inst_type_for_symbol("BTC-USD-261030"), InstType::Futures);
         assert_eq!(inst_type_for_symbol("BTC-USDT-SWAP"), InstType::Swap);
     }
 

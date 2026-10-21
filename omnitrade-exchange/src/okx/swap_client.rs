@@ -62,11 +62,12 @@ fn optional_number(item: &Value, key: &str) -> Result<f64, ExchangeError> {
 }
 
 /// Erkennt kontraktbasierte Instrumente an der OKX-Notation:
-/// SWAP (`BTC-USDT-SWAP`) und XPERP (`BTC-USD_UM_XPERP-310404`).
+/// SWAP (`BTC-USDT-SWAP`), XPERP (`BTC-USD_UM_XPERP-310404`) und datierte
+/// Futures (`BTC-USD_UM-261030`). Die Regel steht EINMAL in
+/// [`crate::okx::instrument::is_contract_id`].
 #[must_use]
 pub(crate) fn is_contract_id(inst_id: &str) -> bool {
-    let up = inst_id.to_uppercase();
-    up.ends_with("-SWAP") || up.contains("_XPERP-")
+    crate::okx::instrument::is_contract_id(inst_id)
 }
 
 /// Cache der Instrumentregeln, befüllt durch [`OkxRestClient::load_instrument`].
@@ -290,18 +291,24 @@ mod tests {
             eprintln!("Demo-Env nicht gesetzt, Test übersprungen");
             return;
         };
-        eprintln!("DEBUG_TEST: key={}... secret={}... pass={}... base={}", 
-        &key[..8.min(key.len())], &secret[..8.min(secret.len())], 
-        &pass[..8.min(pass.len())], base);
-    let creds = ApiCredentials::new(key, secret, Network::Testnet);
-    let mut client = OkxRestClient::new(creds, pass).expect("client");
+        eprintln!(
+            "DEBUG_TEST: key={}... secret={}... pass={}... base={}",
+            &key[..8.min(key.len())],
+            &secret[..8.min(secret.len())],
+            &pass[..8.min(pass.len())],
+            base
+        );
+        let creds = ApiCredentials::new(key, secret, Network::Testnet);
+        let mut client = OkxRestClient::new(creds, pass).expect("client");
         client = client.with_base_url(base);
         eprintln!("DEBUG_TEST: calling load_instrument with BTC-USD-261030, Futures");
-    let inst = tokio_test::block_on(client.load_instrument("BTC-USD-261030", InstType::Futures))
-            .expect("load_instrument");
+        let inst =
+            tokio_test::block_on(client.load_instrument("BTC-USD-261030", InstType::Futures))
+                .expect("load_instrument");
         assert_eq!(inst.inst_type, InstType::Futures);
         assert!(inst.inst_type.is_contract_based());
-        eprintln!("ct_val={}", inst.ct_val); assert!(inst.ct_val > 0.0);
+        eprintln!("ct_val={}", inst.ct_val);
+        assert!(inst.ct_val > 0.0);
         eprintln!("OK: geladen {} ctVal={}", inst.inst_id, inst.ct_val);
     }
 

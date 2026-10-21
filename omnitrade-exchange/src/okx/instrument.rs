@@ -42,6 +42,43 @@ impl InstType {
     }
 }
 
+/// Datierter Terminkontrakt an der ID: das letzte Segment nach `-` ist ein
+/// Datum `YYMMDD`. Beispiele: `BTC-USD_UM-261030`, `BTC-USD-261030`.
+///
+/// Auf dem EEA-Demokonto ist dies der EINZIGE handelbare Kontrakttyp: SWAP
+/// antwortet mit `50124` (kein Handelsrecht) und XPERP-Instrumente fehlen dort
+/// ganz (`51001`). Gemessen am 21.10.2026.
+#[must_use]
+pub fn is_dated_future(inst_id: &str) -> bool {
+    match inst_id.rsplit_once('-') {
+        Some((_, tail)) => tail.len() == 6 && tail.chars().all(|c| c.is_ascii_digit()),
+        None => false,
+    }
+}
+
+/// Kontraktbasiert (Menge in Kontrakten): SWAP, XPERP und datierte Futures.
+#[must_use]
+pub fn is_contract_id(inst_id: &str) -> bool {
+    let up = inst_id.to_uppercase();
+    up.ends_with("-SWAP") || up.contains("_XPERP-") || is_dated_future(&up)
+}
+
+/// InstType aus der OKX-Notation eines kontraktbasierten Symbols.
+///
+/// `None` heißt: kein kontraktbasiertes Symbol (Spot oder unbekannt) - der
+/// Aufrufer entscheidet dann, statt dass hier geraten wird.
+#[must_use]
+pub fn inst_type_for_symbol(symbol: &str) -> Option<InstType> {
+    let up = symbol.to_uppercase();
+    if up.ends_with("-SWAP") {
+        Some(InstType::Swap)
+    } else if up.contains("_XPERP-") || is_dated_future(&up) {
+        Some(InstType::Futures)
+    } else {
+        None
+    }
+}
+
 /// Handelsregeln eines OKX-Instruments.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Instrument {
@@ -262,5 +299,50 @@ mod tests {
             "instId": "X-SWAP", "instType": "SWAP", "ctVal": "0", "lotSz": "1", "minSz": "1",
         });
         assert!(Instrument::parse(&zero).is_err());
+    }
+
+    /// Datierter Terminkontrakt: das letzte Segment ist ein Datum YYMMDD.
+    #[test]
+    fn erkennt_datierte_futures() {
+        assert!(is_dated_future("BTC-USD_UM-261030"));
+        assert!(is_dated_future("btc-usd_um-261030"));
+        assert!(is_dated_future("BTC-USD-261030"));
+        // Gegenprobe: diese sind KEINE datierten Futures
+        assert!(!is_dated_future("BTC-USDT-SWAP"));
+        // XPERP traegt ebenfalls ein Datum im letzten Segment - dort greift
+        // ohnehin die _XPERP-Regel, das Datum ist also kein Widerspruch.
+        assert!(is_dated_future("BTC-USD_UM_XPERP-310404"));
+        assert!(!is_dated_future("BTC-USDT"));
+        assert!(!is_dated_future("BTC-USD-26103")); // 5 Stellen
+        assert!(!is_dated_future("BTC-USD-2610300")); // 7 Stellen
+        assert!(!is_dated_future("BTC-USD-ABCDEF"));
+    }
+
+    #[test]
+    fn inst_type_aus_der_notierung() {
+        assert_eq!(inst_type_for_symbol("BTC-USDT-SWAP"), Some(InstType::Swap));
+        assert_eq!(
+            inst_type_for_symbol("BTC-USD_UM_XPERP-310404"),
+            Some(InstType::Futures)
+        );
+        assert_eq!(
+            inst_type_for_symbol("BTC-USD_UM-261030"),
+            Some(InstType::Futures)
+        );
+        assert_eq!(
+            inst_type_for_symbol("BTC-USD-261030"),
+            Some(InstType::Futures)
+        );
+        // Spot bleibt unentschieden - der Aufrufer entscheidet, hier wird nicht geraten
+        assert_eq!(inst_type_for_symbol("BTC-USDT"), None);
+    }
+
+    #[test]
+    fn contract_id_umfasst_alle_drei_familien() {
+        assert!(is_contract_id("BTC-USDT-SWAP"));
+        assert!(is_contract_id("BTC-USD_UM_XPERP-310404"));
+        assert!(is_contract_id("BTC-USD_UM-261030"));
+        assert!(!is_contract_id("BTC-USDT"));
+        assert!(!is_contract_id("BTC-USDC"));
     }
 }

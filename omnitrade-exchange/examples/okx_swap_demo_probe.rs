@@ -9,7 +9,7 @@
 //! then close by selling back the same base quantity.
 
 use omnitrade_core::Side;
-use omnitrade_exchange::okx::InstType;
+use omnitrade_exchange::okx::instrument::inst_type_for_symbol;
 use omnitrade_exchange::{
     ApiCredentials, ExchangeTrading, Network, OkxRestClient, OrderRequest,
 };
@@ -32,23 +32,21 @@ async fn main() {
         .get(1)
         .and_then(|s| s.parse().ok())
         .unwrap_or(DEFAULT_QTY_BASE);
-    // XPERP (instType=FUTURES) not SWAP: EEA accounts only trade XPERP.
-    // For demo, force Futures for BTC-USD-* / ETH-USD-* symbols (XPERP format).
-        let inst_type = if symbol.starts_with("BTC-USD-") || symbol.starts_with("ETH-USD-") || symbol.to_uppercase().contains("_XPERP-") {
-            InstType::Futures
-        } else {
-            InstType::Swap
-        };
+    // Kontrakt-Typ aus EINER Quelle (Exchange-Crate): SWAP, XPERP und datierte
+    // Futures. Kein Raten aus Symbolpraefixen mehr.
+    let inst_type = inst_type_for_symbol(symbol)
+        .unwrap_or_else(|| {
+            eprintln!("{symbol} ist kein kontraktbasiertes OKX-Symbol (erwartet -SWAP, _XPERP- oder -YYMMDD)");
+            std::process::exit(4);
+        });
 
     let creds = ApiCredentials::new(
             env("OKX_DEMO_API_KEY"),
             env("OKX_DEMO_API_SECRET"),
             Network::Testnet, //Demo: x-simulated-trading: 1, niemals echtes Geld
         );
-        eprintln!("DEBUG_PROBE: key={}... secret={}... pass={}... inst_type={:?} symbol={}", 
-            &env("OKX_DEMO_API_KEY")[..8], &env("OKX_DEMO_API_SECRET")[..8], 
-            &env("OKX_DEMO_API_PASSPHRASE")[..8], inst_type, symbol);
-        let mut client = OkxRestClient::new(creds, env("OKX_DEMO_API_PASSPHRASE")).expect("client");
+    eprintln!("PROBE: symbol={symbol} inst_type={inst_type:?} (Zugangsdaten werden NICHT ausgegeben)");
+    let mut client = OkxRestClient::new(creds, env("OKX_DEMO_API_PASSPHRASE")).expect("client");
     if let Ok(base) = std::env::var("OKX_REST_BASE") {
         println!("API-Domain: {base}");
         client = client.with_base_url(base);
