@@ -186,6 +186,20 @@ fn split_symbol_handles_all_exchange_notations() {
 }
 
 #[test]
+fn split_symbol_handles_xperp_and_dated_futures() {
+    let pair = |b: &str, q: &str| Some((b.to_string(), q.to_string()));
+    // Regression: Live-Lauf 21.10.2026 - der RiskGuard-Pfad konnte
+    // SOL-USD_UM_XPERP-310404 nicht zerlegen und lehnte jede Buy-Order ab.
+    assert_eq!(split_symbol("SOL-USD_UM_XPERP-310404"), pair("SOL", "USD"));
+    assert_eq!(split_symbol("sol-usd_um_xperp-310404"), pair("SOL", "USD"));
+    assert_eq!(split_symbol("BTC-USD-261030"), pair("BTC", "USD"));
+    // Missbildungen bleiben abgelehnt (fail closed).
+    assert_eq!(split_symbol("SOL-USD_UM_XPERP-3104"), None);
+    assert_eq!(split_symbol("SOL-USD_UM_XPERP-ABCD30"), None);
+    assert_eq!(split_symbol("-USD_UM_XPERP-310404"), None);
+}
+
+#[test]
 fn split_symbol_rejects_unsplittable_input() {
     for bad in [
         "",

@@ -6,11 +6,43 @@ use omnitrade_exchange::{Account, PositionSnapshot};
 
 use super::{KNOWN_QUOTES, MAINNET_HARD_CAP};
 
-/// Zerlegt ein Börsensymbol in (Basis, Quote): `BTC-USDT`, `BTC-USDT-SWAP`, `BTC/USD`
-/// oder `BTCUSDT`. Das Suffix `-SWAP` (Perpetual) bezeichnet dasselbe Paar.
+/// Zerlegt ein Börsensymbol in (Basis, Quote): `BTC-USDT`, `BTC-USDT-SWAP`,
+/// `BTC/USD` oder `BTCUSDT`, datierte Futures `BTC-USD-261030` und EEA-XPERPs
+/// `SOL-USD_UM_XPERP-310404` (Settlement-Währung = Quote). Das Suffix `-SWAP`
+/// (Perpetual) bezeichnet dasselbe Paar.
 pub(crate) fn split_symbol(symbol: &str) -> Option<(String, String)> {
     let upper = symbol.to_uppercase();
     let pair = upper.strip_suffix("-SWAP").unwrap_or(upper.as_str());
+    // XPERP: BASE-QUOTE_UM_XPERP-YYMMDD (EEA-Perpetual)
+    if let Some(idx) = pair.find("_UM_XPERP-") {
+        let head = &pair[..idx];
+        let expiry = &pair[idx + "_UM_XPERP-".len()..];
+        if let Some((base, quote)) = head.split_once('-') {
+            if !base.is_empty()
+                && !quote.is_empty()
+                && quote.chars().all(|c| c.is_ascii_alphanumeric())
+                && expiry.len() == 6
+                && expiry.chars().all(|c| c.is_ascii_digit())
+            {
+                return Some((base.to_string(), quote.to_string()));
+            }
+        }
+        return None;
+    }
+    // BASE-QUOTE-YYMMDD (datiertes Future, z. B. BTC-USD-261030)
+    if pair.split('-').count() == 3 {
+        let parts: Vec<&str> = pair.split('-').collect();
+        let (base, quote, expiry) = (parts[0], parts[1], parts[2]);
+        if !base.is_empty()
+            && !quote.is_empty()
+            && quote.chars().all(|c| c.is_ascii_alphanumeric())
+            && expiry.len() == 6
+            && expiry.chars().all(|c| c.is_ascii_digit())
+        {
+            return Some((base.to_string(), quote.to_string()));
+        }
+        return None;
+    }
     if let Some((base, quote)) = pair.split_once(['-', '/']) {
         return (!base.is_empty() && !quote.is_empty() && !quote.contains(['-', '/']))
             .then(|| (base.to_string(), quote.to_string()));
