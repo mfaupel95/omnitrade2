@@ -96,9 +96,11 @@ async fn sell_signal_opens_short_only_when_allow_shorts() {
 
     // Assert: Sell-Order wird platziert (Short-Eröffnung im net mode).
     assert!(result.is_ok());
-    let placed = h.placed.lock().expect("placed");
-    assert_eq!(placed.len(), 1);
-    assert!(matches!(placed[0].side, Side::Sell));
+    {
+        let placed = h.placed.lock().expect("placed");
+        assert_eq!(placed.len(), 1);
+        assert!(matches!(placed[0].side, Side::Sell));
+    }
 
     // Ohne das Flag bleibt der Lauf long-only: dieselbe Situation, keine Order.
     let h2 = Harness::new("short-default", SELL_ABOVE_40K);
@@ -106,7 +108,6 @@ async fn sell_signal_opens_short_only_when_allow_shorts() {
         .await
         .expect("run");
     let placed2 = h2.placed.lock().expect("placed");
-    eprintln!("DEBUG h2 placed: {placed2:?}");
     assert!(placed2.is_empty());
 }
 
