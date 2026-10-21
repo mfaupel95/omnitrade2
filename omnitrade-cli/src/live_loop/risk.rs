@@ -79,6 +79,36 @@ pub(crate) fn account_equity(
     pair_equity(account, base, quote, price) + position.unrealized_pnl
 }
 
+/// Waehrung, in der die Konto-Equity bewertet wird.
+///
+/// Das Symbol nennt bei XPERP `USD`, das Konto fuehrt aber USDC (die Abrechnungs-
+/// waehrung des Kontrakts). Wer stur die Quote nimmt, findet keinen Bestand und
+/// bewertet das Konto mit 0 — der RiskGuard misst dann einen Drawdown von
+/// Millionen Prozent und lehnt jeden Auftrag ab.
+///
+/// Regel: die Quote gilt, solange das Konto sie traegt. Traegt es sie nicht und
+/// kennt das Instrument eine Abrechnungswaehrung mit Bestand, gilt diese. Sonst
+/// bleibt es bei der Quote (unveraendertes Verhalten, fail open zur alten Regel).
+pub(crate) fn bewertungs_waehrung<'a>(
+    account: &Account,
+    quote: &'a str,
+    settle: Option<&'a str>,
+) -> &'a str {
+    let hat_bestand = |ccy: &str| {
+        account
+            .balances
+            .get(ccy)
+            .is_some_and(|b| b.free + b.locked > 0.0)
+    };
+    if hat_bestand(quote) {
+        return quote;
+    }
+    match settle {
+        Some(ccy) if hat_bestand(ccy) => ccy,
+        _ => quote,
+    }
+}
+
 /// Mindestabstand Markpreis zu Liquidationspreis (relativ zum Markpreis), bevor eine
 /// Position weiter vergrößert werden darf. Bei 10x isolated liegt der Abstand direkt
 /// nach dem Einstieg bei rund 9 %; 5 % lässt nur noch wenig Spielraum.
