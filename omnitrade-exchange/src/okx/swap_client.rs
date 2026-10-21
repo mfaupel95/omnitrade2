@@ -143,20 +143,17 @@ impl OkxRestClient {
     }
 
     /// Baut den Order-Body für SWAP/XPERP. Die Menge wird auf Kontrakte gerundet, bevor sie
-    /// den Adapter verlässt. Für SWAP ist quantity Base-Währung; für XPERP (Futures) Kontrakte.
+    /// den Adapter verlässt. quantity ist bei BEIDEN Instrumentklassen die Base-Währung;
+    /// die Umrechnung läuft über ctVal (bei XPERP ist ctValCcy die Base, gemessen an
+    /// eea.okx.com: BTC-USD_UM_XPERP-310404 ctVal=0.0001, ctValCcy=BTC). Einheitliche
+    /// Semantik, damit die Live-Schleife quantity × Kurs als Notional rechnen kann.
     pub(crate) fn swap_order_body(
         &self,
         req: &OrderRequest,
         px: Option<f64>,
     ) -> Result<Value, ExchangeError> {
         let inst = self.swap_instrument(&req.symbol)?;
-        let contracts = if inst.inst_type.is_contract_based() && inst.inst_type != InstType::Swap {
-            // XPERP (Futures): quantity is already in contracts (ctVal in settlement currency)
-            req.quantity
-        } else {
-            // SWAP: quantity is in base currency, convert using ctVal
-            inst.base_to_contracts(req.quantity)?
-        };
+        let contracts = inst.base_to_contracts(req.quantity)?;
         let text = swap::format_contracts(contracts, inst.lot_sz);
         Ok(swap::order_body(req, &text, px))
     }
@@ -201,6 +198,31 @@ mod tests {
         .expect("fixture parses")
     }
 
+    fn sol_xperp() -> Instrument {
+        // Gemessen an eea.okx.com: ctVal in der Base (ctValCcy=SOL).
+        Instrument::parse(&json!({
+            "instId": "SOL-USD_UM_XPERP-310404", "instType": "FUTURES", "ctVal": "0.01",
+            "lotSz": "1", "minSz": "1",
+        }))
+        .expect("fixture parses")
+    }
+
+    fn seeded_client(inst: &Instrument) -> OkxRestClient {
+        use crate::{ApiCredentials, Network};
+        let creds = ApiCredentials::new(
+            "key".to_string(),
+            "secret".to_string(),
+            Network::Testnet,
+        );
+        let client = OkxRestClient::new(creds, "passphrase".to_string()).expect("client");
+        client
+            .instruments
+            .write()
+            .expect("lock")
+            .insert(inst.inst_id.clone(), inst.clone());
+        client
+    }
+
     #[test]
     fn long_position_converts_contracts_and_carries_upl() {
         // Arrange: 5 Kontrakte long, Verlust -12.5 USDT
@@ -222,6 +244,49 @@ mod tests {
         ];
         let snap = parse_swap_position(&data, &btc_swap()).expect("parses");
         assert!((snap.base_qty + 0.03).abs() < 1e-12);
+    }
+
+    #[test]
+    fn xperp_order_body_converts_base_to_contracts() {
+        // Regression: Vor 21.10.2026 nahm der XPERP-Zweig quantity unverändert als
+        // Kontrakte, während die Live-Schleife quantity × Kurs als Base-Notional
+        // rechnete (Einheitsmismatch: 19 × 106 = 2014 statt 20 USDC). Seitdem ist
+        // quantity für XPERP wie für SWAP die Base-Währung.
+        use omnitrade_core::Side;
+        let client = seeded_client(&sol_xperp());
+        // 0.19 SOL / ctVal 0.01 SOL = 19 Kontrakte
+        let body = client
+            .swap_order_body(
+                &OrderRequest::market("SOL-USD_UM_XPERP-310404".into(), Side::Buy, 0.19),
+                None,
+            )
+            .expect("order body");
+        assert_eq!(body["sz"], "19");
+        assert_eq!(body["tdMode"], "isolated");
+        assert_eq!(body["side"], "buy");
+        // SWAP bleibt unverändert: 0.05 BTC / ctVal 0.01 = 5 Kontrakte
+        let client = seeded_client(&btc_swap());
+        let body = client
+            .swap_order_body(
+                &OrderRequest::market("BTC-USDT-SWAP".into(), Side::Buy, 0.05),
+                None,
+            )
+            .expect("order body");
+        assert_eq!(body["sz"], "5.00");
+    }
+
+    #[test]
+    fn xperp_order_body_below_min_size_fails_closed() {
+        use omnitrade_core::Side;
+        let client = seeded_client(&sol_xperp());
+        // 0.004 SOL / 0.01 = 0 Kontrakte (floor) < minSz 1
+        let err = client
+            .swap_order_body(
+                &OrderRequest::market("SOL-USD_UM_XPERP-310404".into(), Side::Buy, 0.004),
+                None,
+            )
+            .expect_err("unter minSz muss fehlschlagen");
+        assert!(err.to_string().contains("Minimum"), "{err}");
     }
 
     #[test]

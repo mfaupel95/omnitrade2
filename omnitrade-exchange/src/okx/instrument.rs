@@ -131,7 +131,7 @@ impl Instrument {
         Ok(contracts)
     }
 
-    /// Kontrakte → Basiswährung. Nur für SWAP.
+    /// Kontrakte → Basiswährung. Für SWAP und XPERP (ctVal ist bei beiden in der Base).
     #[must_use]
     pub fn contracts_to_base(&self, contracts: f64) -> f64 {
         contracts * self.ct_val
