@@ -43,6 +43,9 @@ pub struct LiveArgs<'a> {
     pub max_notional_usd: Option<f64>,
     /// Ausdrückliche Bestätigung, dass auf Mainnet echtes Geld eingesetzt wird.
     pub confirm_real_money: bool,
+    /// Erlaubt Kurzpositionen (Sell bei flacher Position öffnet Short).
+    /// Standard ist long-only (Haussatz C.2).
+    pub allow_shorts: bool,
     /// JSON-Status-Snapshot für Beobachter (`--status-file`).
     pub status_file: Option<&'a Path>,
     /// Kerzenlänge der Strategie (`--interval`), z. B. "1m", "1h".
@@ -74,6 +77,7 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
         order_quantity,
         max_notional_usd: max_notional,
         confirm_real_money,
+        allow_shorts,
         status_file,
         interval,
     } = *args;
@@ -218,6 +222,7 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
             max_notional,
             interval,
             warmup: &warmup,
+            allow_shorts,
         };
 
         match exchange {
@@ -460,6 +465,7 @@ mod tests {
             order_quantity: 0.001,
             max_notional_usd: None,
             confirm_real_money: false,
+            allow_shorts: false,
             status_file: None,
             interval: "1m",
         })
@@ -548,6 +554,7 @@ mod tests {
             order_quantity: 0.0001,
             max_notional_usd: cap,
             confirm_real_money: confirm,
+            allow_shorts: false,
             status_file: None,
             interval: "1m",
         }

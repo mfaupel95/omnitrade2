@@ -85,6 +85,32 @@ async fn hold_signal_places_no_order() {
 }
 
 #[tokio::test]
+async fn sell_signal_opens_short_only_when_allow_shorts() {
+    // Arrange: flaches Konto, Sell-Signal (Kurs über 40k).
+    let h = Harness::new("short-allowed", SELL_ABOVE_40K).with_allow_shorts();
+
+    // Act
+    let result = h
+        .run(&[45000.0], Some(1000.0), Network::Testnet, 0.001)
+        .await;
+
+    // Assert: Sell-Order wird platziert (Short-Eröffnung im net mode).
+    assert!(result.is_ok());
+    let placed = h.placed.lock().expect("placed");
+    assert_eq!(placed.len(), 1);
+    assert!(matches!(placed[0].side, Side::Sell));
+
+    // Ohne das Flag bleibt der Lauf long-only: dieselbe Situation, keine Order.
+    let h2 = Harness::new("short-default", SELL_ABOVE_40K);
+    h2.run(&[45000.0], Some(1000.0), Network::Testnet, 0.001)
+        .await
+        .expect("run");
+    let placed2 = h2.placed.lock().expect("placed");
+    eprintln!("DEBUG h2 placed: {placed2:?}");
+    assert!(placed2.is_empty());
+}
+
+#[tokio::test]
 async fn balance_failure_blocks_order_fail_closed() {
     // Arrange
     let h = Harness::new("nobalance", BUY_BELOW_40K);
