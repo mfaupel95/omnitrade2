@@ -22,8 +22,8 @@ use omnitrade_exchange::{
 };
 
 const DEFAULT_SYMBOL: &str = "SOL-USD_UM_XPERP-310404";
-const DEFAULT_KONTRAKTE: f64 = 19.0; // 19 x 0.01 SOL @ ~106.4 = ~20.2 USDC
-const MAX_KONTRAKTE: f64 = 30.0;
+const DEFAULT_BASE_QTY: f64 = 0.19; // 0.19 SOL @ ~106.4 = ~20.2 USDC
+const MAX_BASE_QTY: f64 = 0.5; // 50 Kontrakte bei ctVal 0.01 - maximal ~53 USDC
 const MAX_NOTIONAL_USDC: f64 = 45.0;
 const EEA_REST: &str = "https://eea.okx.com";
 
@@ -46,14 +46,15 @@ fn main() {
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     let symbol = args.first().map_or(DEFAULT_SYMBOL, String::as_str);
-    let kontrakte: f64 = args
+    // Menge in der Base-Währung (SOL); der Adapter rechnet ueber ctVal in Kontrakte um.
+    let base_qty: f64 = args
         .get(1)
         .and_then(|s| s.parse().ok())
-        .unwrap_or(DEFAULT_KONTRAKTE);
+        .unwrap_or(DEFAULT_BASE_QTY);
 
     // Waechter 1: Menge
-    if !(1.0..=MAX_KONTRAKTE).contains(&kontrakte) || !kontrakte.is_finite() {
-        eprintln!("Menge {kontrakte} auferhalb 1..={MAX_KONTRAKTE} Kontrakte: Abbruch.");
+    if !(0.01..=MAX_BASE_QTY).contains(&base_qty) || !base_qty.is_finite() {
+        eprintln!("Menge {base_qty} auferhalb 0.01..={MAX_BASE_QTY} Base: Abbruch.");
         std::process::exit(5);
     }
     if !symbol.to_uppercase().contains("_XPERP-") {
@@ -107,8 +108,12 @@ fn main() {
                 eprintln!("Kein Marktpreis fuer {symbol}: Abbruch vor der Order.");
                 std::process::exit(7);
             });
-        let notional = mark * inst.ct_val * kontrakte;
-        println!("Marktpreis: {mark} -> Notional {notional:.2} USDC ({kontrakte} Kontrakte)");
+        // Notional = Base-Menge x Marktpreis (SOL x USDC/SOL = USDC).
+        let notional = mark * base_qty;
+        println!(
+            "Marktpreis: {mark} -> Notional {notional:.2} USDC ({base_qty} Base, ctVal={})",
+            inst.ct_val
+        );
         if notional > MAX_NOTIONAL_USDC {
             eprintln!("Notional {notional:.2} > {MAX_NOTIONAL_USDC} USDC: Abbruch.");
             std::process::exit(8);
@@ -122,12 +127,12 @@ fn main() {
         client.ensure_net_mode().await.expect("ensure_net_mode");
         println!("ensure_net_mode ok (one-way)");
 
-        // 4) LONG-Market-Order (XPERP: Menge = Kontrakte)
+        // 4) LONG-Market-Order (Menge in Base-Waehrung; Adapter rechnet in Kontrakte um)
         let buy = client
-            .place_order(&OrderRequest::market(symbol.into(), Side::Buy, kontrakte))
+            .place_order(&OrderRequest::market(symbol.into(), Side::Buy, base_qty))
             .await
             .expect("market buy");
-        println!("Market-Buy GEFUEHRT: ordId={} ({} Kontrakte)", buy.id, kontrakte);
+        println!("Market-Buy GEFUEHRT: ordId={} ({} Base)", buy.id, base_qty);
         tokio::time::sleep(std::time::Duration::from_secs(3)).await;
 
         // 5) Position lesen
@@ -143,9 +148,9 @@ fn main() {
             eprintln!("Position nach Buy nicht offen (pos={}): SCHLIESSEN und melden.", pos.base_qty);
         }
 
-        // 6) Schliessen (gleiche Kontraktzahl)
+        // 6) Schliessen (gleiche Base-Menge)
         let sell = client
-            .place_order(&OrderRequest::market(symbol.into(), Side::Sell, kontrakte))
+            .place_order(&OrderRequest::market(symbol.into(), Side::Sell, base_qty))
             .await
             .expect("market sell");
         println!("Market-Sell GEFUEHRT: ordId={}", sell.id);

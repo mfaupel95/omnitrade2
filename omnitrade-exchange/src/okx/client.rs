@@ -57,18 +57,42 @@ pub(crate) fn interval_code(interval: &str) -> Option<&'static str> {
     }
 }
 
-/// OKX instruments are `BASE-QUOTE` (e.g. `BTC-USDT`) or perpetuals `BASE-QUOTE-SWAP`.
+/// OKX-Instrumente sind `BASE-QUOTE` (z. B. `BTC-USDT`), Perpetuals
+/// `BASE-QUOTE-SWAP`, datierte Futures `BASE-QUOTE-YYMMDD` (z. B.
+/// `BTC-USD-261030`) und die EEA-XPERPs `BASE-QUOTE_UM_XPERP-YYMMDD`
+/// (z. B. `SOL-USD_UM_XPERP-310404`).
 fn validate_symbol(symbol: &str) -> Result<String, ExchangeError> {
     let upper = symbol.to_uppercase();
     let core = upper.strip_suffix("-SWAP").unwrap_or(upper.as_str());
-    match core.split_once('-') {
-        Some((base, quote)) if !base.is_empty() && !quote.is_empty() && !quote.contains('-') => {
-            Ok(upper)
+    let digits6 = |s: &str| s.len() == 6 && s.chars().all(|c| c.is_ascii_digit());
+    let ok = match core.split('-').collect::<Vec<_>>().as_slice() {
+        [base, quote] if !base.is_empty() && !quote.is_empty() => true,
+        // BASE-QUOTE_UM_XPERP-YYMMDD (EEA-Perpetual)
+        [base, mid, expiry]
+            if !base.is_empty() && mid.contains("_UM_XPERP") && digits6(expiry) =>
+        {
+            true
         }
-        _ => Err(ExchangeError::SubscriptionFailed {
+        // BASE-QUOTE-YYMMDD (datiertes Future)
+        [base, quote, expiry]
+            if !base.is_empty()
+                && !quote.is_empty()
+                && quote.chars().all(|c| c.is_ascii_alphanumeric())
+                && digits6(expiry) =>
+        {
+            true
+        }
+        _ => false,
+    };
+    if ok {
+        Ok(upper)
+    } else {
+        Err(ExchangeError::SubscriptionFailed {
             symbol: symbol.to_string(),
-            reason: "OKX-Symbole haben die Form BASE-QUOTE, z. B. BTC-USDT".to_string(),
-        }),
+            reason: "OKX-Symbole haben die Form BASE-QUOTE, BASE-QUOTE-SWAP, \
+                     BASE-QUOTE-YYMMDD oder BASE-QUOTE_UM_XPERP-YYMMDD"
+                .to_string(),
+        })
     }
 }
 
@@ -390,5 +414,30 @@ mod tests {
         assert_eq!(prod.public_url, PUBLIC_URL);
         assert_eq!(prod.name(), "OKX");
         assert!(prod.supported_intervals().contains(&"1h"));
+    }
+
+    #[test]
+    fn validate_symbol_accepts_all_okx_contract_forms() {
+        assert!(validate_symbol("BTC-USDT").is_ok());
+        assert!(validate_symbol("BTC-USDT-SWAP").is_ok());
+        assert!(validate_symbol("BTC-USD-261030").is_ok());
+        assert!(validate_symbol("SOL-USD_UM_XPERP-310404").is_ok());
+        assert!(validate_symbol("sol-usd_um_xperp-310404").is_ok());
+        // Regression: XPERP-Symbole muss die Kerzen-Subscription annehmen
+        // (Live-Lauf 21.10.2026 brach vorher an dieser Validierung ab).
+        let norm = validate_symbol("sol-usd_um_xperp-310404").expect("XPERP ok");
+        assert_eq!(norm, "SOL-USD_UM_XPERP-310404");
+    }
+
+    #[test]
+    fn validate_symbol_rejects_malformed_symbols() {
+        assert!(validate_symbol("BTCUSDT").is_err());
+        assert!(validate_symbol("BTC/USDT").is_err());
+        assert!(validate_symbol("BTC-USDT-FOO").is_err());
+        assert!(validate_symbol("BTC-USDT-26103").is_err()); // 5 Ziffern
+        assert!(validate_symbol("BTC-USD-26AB30").is_err()); // nicht alle Ziffern
+        assert!(validate_symbol("BTC-USD_UM_XPERP-3104").is_err());
+        assert!(validate_symbol("-USDT").is_err());
+        assert!(validate_symbol("BTC-").is_err());
     }
 }
