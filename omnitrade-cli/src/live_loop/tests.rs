@@ -198,3 +198,83 @@ fn test_live_loop_error_display() {
     ));
     assert!(err.to_string().contains("Script file error"));
 }
+
+fn kerze(ts: u64) -> Candle {
+    Candle::new(ts, 100.0, 101.0, 99.0, 100.5, 1.0)
+}
+
+#[test]
+fn intervall_sekunden_kennt_die_hausintervalle() {
+    // Arrange + Act + Assert
+    assert_eq!(intervall_sekunden("1m"), 60);
+    assert_eq!(intervall_sekunden("15m"), 900);
+    assert_eq!(intervall_sekunden("1h"), 3_600);
+    assert_eq!(intervall_sekunden("4h"), 14_400);
+    assert_eq!(intervall_sekunden("1d"), 86_400);
+    // Unbekanntes Intervall darf nicht panisch werden, sondern 1 s ergeben.
+    assert_eq!(intervall_sekunden(""), 1);
+}
+
+#[test]
+fn kanal_gilt_nach_drei_intervallen_als_still() {
+    // Arrange
+    let start = 1_000_000u64;
+
+    // Act + Assert
+    // Signatur: kanal_still(letzte_kerze_ms, jetzt_ms, intervall_s)
+    // 1m: Grenze max(3 x 60 s, 60 s) = 180 s
+    assert!(!kanal_still(start, start + 120_000, 60));
+    assert!(kanal_still(start, start + 200_000, 60));
+    // 1h: Grenze 3 h - ein einzelner Aussetzer ist noch keine Funkstille.
+    assert!(!kanal_still(start, start + 2 * 3_600_000, 3_600));
+    assert!(kanal_still(start, start + 4 * 3_600_000, 3_600));
+    // Uhr zurueckgesprungen (NTP): keine Funkstille, kein Unterlauf.
+    assert!(!kanal_still(start + 5_000, start, 60));
+    assert!(!kanal_still(start, start, 60));
+}
+
+#[test]
+fn puffer_aus_rest_ergaenzt_und_entdoppelt() {
+    // Arrange: der Puffer kennt 30, 40, 50 s; REST liefert 10..40
+    let alt = vec![kerze(30_000), kerze(40_000), kerze(50_000)];
+    let neu = vec![kerze(10_000), kerze(20_000), kerze(30_000), kerze(40_000)];
+
+    // Act
+    let puffer = puffer_aus_rest(&alt, neu);
+
+    // Assert: aufsteigend, jede Kerze genau einmal, die juengere aus dem Puffer bleibt.
+    let ts: Vec<u64> = puffer.iter().map(|c| c.timestamp_ms).collect();
+    assert_eq!(ts, vec![10_000, 20_000, 30_000, 40_000, 50_000]);
+}
+
+#[test]
+fn puffer_aus_rest_ohne_rest_kerzen_behaelt_den_bestand() {
+    // Arrange
+    let alt = vec![kerze(30_000), kerze(40_000)];
+
+    // Act
+    let puffer = puffer_aus_rest(&alt, Vec::new());
+
+    // Assert
+    assert_eq!(puffer.len(), 2);
+    assert_eq!(puffer[1].timestamp_ms, 40_000);
+}
+
+#[test]
+fn puffer_aus_rest_deckelt_auf_die_puffergroesse() {
+    // Arrange
+    let alt: Vec<Candle> = Vec::new();
+    let neu: Vec<Candle> = (0..(MAX_CANDLE_BUFFER as u64 + 40))
+        .map(|i| kerze(1_000 + i * 1_000))
+        .collect();
+
+    // Act
+    let puffer = puffer_aus_rest(&alt, neu);
+
+    // Assert: gedeckelt, und zwar von OBEN - die neueste Kerze bleibt.
+    assert_eq!(puffer.len(), MAX_CANDLE_BUFFER);
+    assert_eq!(
+        puffer.last().expect("letzte").timestamp_ms,
+        1_000 + 539 * 1_000
+    );
+}

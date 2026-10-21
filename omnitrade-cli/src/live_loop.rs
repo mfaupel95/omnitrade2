@@ -33,6 +33,58 @@ pub(crate) use risk::{
 /// Maximale Anzahl Kerzen, die für die Skript-Auswertung vorgehalten werden.
 const MAX_CANDLE_BUFFER: usize = 500;
 
+/// Ohne Kerze gilt ein Kanal nach so vielen Intervallen als still.
+const FUNKSTILLE_INTERVALLE: u64 = 3;
+/// Untergrenze, damit ein 1m-Kanal nicht bei jedem Aussetzer nachlaedt.
+const FUNKSTILLE_MINDEST_SEKUNDEN: u64 = 60;
+
+/// Aktuelle Zeit in Millisekunden seit der Unix-Epoche.
+fn jetzt_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+/// Sekunden eines Intervalls (`1m` -> 60, `4h` -> 14400).
+pub(crate) fn intervall_sekunden(interval: &str) -> u64 {
+    let (zahl, einheit) = interval.split_at(interval.len().saturating_sub(1));
+    let n: u64 = zahl.parse().unwrap_or(1).max(1);
+    match einheit {
+        "m" | "M" => n * 60,
+        "h" | "H" => n * 3_600,
+        "d" | "D" => n * 86_400,
+        "w" | "W" => n * 604_800,
+        _ => n,
+    }
+}
+
+/// Schweigt der Kanal so lange, dass die Schleife blind handelt?
+pub(crate) fn kanal_still(letzte_kerze_ms: u64, jetzt_ms: u64, intervall_s: u64) -> bool {
+    let grenze_s = (intervall_s * FUNKSTILLE_INTERVALLE).max(FUNKSTILLE_MINDEST_SEKUNDEN);
+    jetzt_ms.saturating_sub(letzte_kerze_ms) > grenze_s * 1_000
+}
+
+/// Baut den Kerzenpuffer nach einer Funkstille aus REST-Kerzen neu auf.
+///
+/// Die REST-Kerzen bringen den Bestand auf Stand; Kerzen, die der Puffer bereits
+/// juenger kennt (der Kanal lief wieder an), bleiben erhalten. Zeitstempel sind
+/// eindeutig, der Puffer bleibt bei [`MAX_CANDLE_BUFFER`] gedeckelt.
+pub(crate) fn puffer_aus_rest(alt: &[Candle], neu: Vec<Candle>) -> Vec<Candle> {
+    let mut alle = neu;
+    match alle.last().map(|c| c.timestamp_ms) {
+        Some(letzte) => alle.extend(alt.iter().filter(|c| c.timestamp_ms > letzte).cloned()),
+        None => alle = alt.to_vec(),
+    }
+    alle.sort_by_key(|c| c.timestamp_ms);
+    alle.dedup_by_key(|c| c.timestamp_ms);
+    if alle.len() > MAX_CANDLE_BUFFER {
+        let ueber = alle.len() - MAX_CANDLE_BUFFER;
+        alle.drain(..ueber);
+    }
+    alle
+}
+
 /// Quote-Währung, deren Bestand als Konto-Equity für den RiskGuard dient.
 /// Quote-Währungen für Symbole ohne Trennzeichen (`BTCUSDT`), längere zuerst, damit
 /// z. B. `USDT` vor `USD` und `BNB` erkannt wird.
@@ -186,6 +238,15 @@ pub async fn live_loop(
     }
     flush_status(status);
 
+    // Funkstille-Waechter: ein WebSocket, der nur noch schweigt, sieht wie ein
+    // laufender Prozess aus. Am 21.10.2026 stand die Schleife nach einem Lesefehler
+    // 5,5 h still (Statusdatei eingefroren, keine Order, kein Fehler).
+    let intervall_s = intervall_sekunden(interval);
+    let mut letzte_kerze_ms = candle_buffer
+        .last()
+        .map_or_else(jetzt_ms, |c| c.timestamp_ms);
+    let mut rest_nachgeladen = false;
+
     // Not-Aus wird bei jeder Kerze und im Sekundentakt geprüft, damit er auch
     // bei ruhigem Markt wirkt.
     let mut kill_check = tokio::time::interval(Duration::from_secs(1));
@@ -201,6 +262,33 @@ pub async fn live_loop(
                 if kill_switch::is_engaged(kill_file) {
                     return halt_trading(&exchange_trading, symbol, &mut exchange_stream).await;
                 }
+                if !kanal_still(letzte_kerze_ms, jetzt_ms(), intervall_s) {
+                    rest_nachgeladen = false;
+                    continue;
+                }
+                if rest_nachgeladen {
+                    continue;
+                }
+                rest_nachgeladen = true;
+                match exchange_stream
+                    .recent_candles(symbol, interval, MAX_CANDLE_BUFFER)
+                    .await
+                {
+                    Ok(kerzen) if !kerzen.is_empty() => {
+                        let vorher = candle_buffer.len();
+                        candle_buffer = puffer_aus_rest(&candle_buffer, kerzen);
+                        letzte_kerze_ms = candle_buffer
+                            .last()
+                            .map_or(letzte_kerze_ms, |c| c.timestamp_ms);
+                        warn!(
+                            "Kerzen-Kanal still - Puffer aus REST neu aufgebaut ({} -> {} Kerzen)",
+                            vorher,
+                            candle_buffer.len()
+                        );
+                    }
+                    Ok(_) => warn!("Kerzen-Kanal still und REST lieferte keine Kerzen"),
+                    Err(e) => warn!("Kerzen-Kanal still, REST-Nachladen fehlgeschlagen: {e}"),
+                }
                 continue;
             }
         };
@@ -214,6 +302,8 @@ pub async fn live_loop(
         {
             continue;
         }
+        letzte_kerze_ms = candle.timestamp_ms;
+        rest_nachgeladen = false;
         candle_buffer.push(candle.clone());
         if candle_buffer.len() > MAX_CANDLE_BUFFER {
             let overflow = candle_buffer.len() - MAX_CANDLE_BUFFER;
@@ -257,7 +347,11 @@ pub async fn live_loop(
             candle.close,
             initial_capital,
             exposure.as_mut(),
-            if allow_shorts { None } else { Some(&mut long_only) },
+            if allow_shorts {
+                None
+            } else {
+                Some(&mut long_only)
+            },
         )
         .await
         {
