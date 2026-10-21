@@ -229,7 +229,7 @@ pub async fn live_loop(
         .connect()
         .await
         .map_err(|e| LiveLoopError::ExchangeError(e.to_string()))?;
-    info!("Verbunden mit Binance ({:?})", network);
+    info!("Verbunden mit der Boerse ({:?})", network);
 
     // Candle buffer for script evaluation (auf MAX_CANDLE_BUFFER begrenzt)
     let mut candle_buffer: Vec<Candle> = warmup.to_vec();
@@ -242,9 +242,9 @@ pub async fn live_loop(
     // laufender Prozess aus. Am 21.10.2026 stand die Schleife nach einem Lesefehler
     // 5,5 h still (Statusdatei eingefroren, keine Order, kein Fehler).
     let intervall_s = intervall_sekunden(interval);
-    let mut letzte_kerze_ms = candle_buffer
-        .last()
-        .map_or_else(jetzt_ms, |c| c.timestamp_ms);
+    // Die Vorwaerm-Kerzen sind Historie: der Waechter zaehlt ab Schleifenstart,
+    // sonst laedt jeder Start sofort unnoetig aus REST nach.
+    let mut letzte_kerze_ms = jetzt_ms();
     let mut rest_nachgeladen = false;
 
     // Not-Aus wird bei jeder Kerze und im Sekundentakt geprüft, damit er auch
