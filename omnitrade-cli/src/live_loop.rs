@@ -27,7 +27,7 @@ mod tests;
 
 pub(crate) use risk::{
     account_equity, check_liquidation_distance, held_base, split_symbol, valid_mainnet_cap,
-    ExposureLimit,
+    ExposureLimit, LongOnlyGuard,
 };
 
 /// Maximale Anzahl Kerzen, die für die Skript-Auswertung vorgehalten werden.
@@ -95,6 +95,8 @@ pub struct LiveConfig<'a> {
     pub max_notional: Option<f64>,
     /// Kerzenlänge, auf der die Strategie läuft (z. B. "1m", "1h").
     pub interval: &'a str,
+    /// Erlaubt Kurzpositionen; der Deckel gilt dann in beide Richtungen.
+    pub allow_shorts: bool,
     /// Bereits geschlossene Kerzen, die die Indikatoren vorwärmen. Leer, wenn die Börse
     /// keine Historie liefert.
     pub warmup: &'a [Candle],
@@ -129,6 +131,7 @@ pub async fn live_loop(
         max_notional,
         interval,
         warmup,
+        allow_shorts,
     } = *config;
 
     // Mainnet nur mit gültigem Deckel (testnet-first, echtes Geld braucht eine Grenze).
@@ -144,7 +147,15 @@ pub async fn live_loop(
             )));
         }
     }
-    let mut exposure = max_notional.map(ExposureLimit::new);
+    let mut exposure = max_notional.map(|cap| ExposureLimit::new(cap).allow_shorts(allow_shorts));
+    // Long-only gilt AUCH ohne Deckel: die Bremse haengt nicht an --max-notional.
+    let mut long_only = LongOnlyGuard::new();
+    if allow_shorts {
+        warn!(
+            "Shorts aktiviert: Sell-Signale dürfen Kurzpositionen eröffnen \
+             (Positionsdeckel in beide Richtungen)"
+        );
+    }
 
     // Load and validate script file
     let script_content = fs::read_to_string(script_path)?;
@@ -246,6 +257,7 @@ pub async fn live_loop(
             candle.close,
             initial_capital,
             exposure.as_mut(),
+            if allow_shorts { None } else { Some(&mut long_only) },
         )
         .await
         {
@@ -333,6 +345,7 @@ pub(crate) async fn place_order_with_risk_check(
         current_price,
         initial_capital,
         None,
+        None,
     )
     .await
 }
@@ -345,6 +358,7 @@ pub(crate) async fn place_order_guarded(
     current_price: f64,
     initial_capital: f64,
     exposure: Option<&mut ExposureLimit>,
+    long_only: Option<&mut LongOnlyGuard>,
 ) -> Result<omnitrade_core::Order, LiveLoopError> {
     // Create mock order for risk checking
     let mock_order = omnitrade_core::Order {
@@ -415,8 +429,14 @@ pub(crate) async fn place_order_guarded(
     check_liquidation_distance(&position, order_req.side).map_err(LiveLoopError::RiskViolation)?;
     let equity = account_equity(&balances, &base, &quote, current_price, &position);
 
+    let held = held_base(&balances, &base, &position);
+    // Long-only zuerst: sie gilt unabhaengig davon, ob ein Deckel gesetzt ist.
+    if let Some(guard) = long_only {
+        guard
+            .check(order_req.side, order_req.quantity, held)
+            .map_err(LiveLoopError::RiskViolation)?;
+    }
     if let Some(limit) = exposure {
-        let held = held_base(&balances, &base, &position);
         limit
             .check(order_req.side, order_req.quantity, current_price, held)
             .map_err(LiveLoopError::RiskViolation)?;

@@ -354,6 +354,59 @@ fn exposure_cap_sell_tolerates_fee_shortfall() {
 }
 
 #[test]
+fn exposure_cap_rejects_shorts_by_default() {
+    // Arrange: flacher Start, Standard-Lauf (long-only, Haussatz C.2).
+    let mut limit = ExposureLimit::new(200.0);
+
+    // Act: Sell bei flacher Position = Short-Eröffnung.
+    let err = limit.check(Side::Sell, 1.0, 100.0, 0.0);
+
+    // Assert
+    assert!(
+        matches!(&err, Err(m) if m.contains("übersteigt")),
+        "{err:?}"
+    );
+}
+
+#[test]
+fn exposure_cap_allows_shorts_when_enabled() {
+    let mut limit = ExposureLimit::new(200.0).allow_shorts(true);
+
+    // Short-Eröffnung: 1 @ 100 = 100 ≤ 200.
+    assert!(limit.check(Side::Sell, 1.0, 100.0, 0.0).is_ok());
+    // Short vergrößern: 200 ≤ 200.
+    assert!(limit.check(Side::Sell, 1.0, 100.0, -1.0).is_ok());
+    // Dritter Short: 300 > 200 → Deckel in beide Richtungen.
+    let over = limit.check(Side::Sell, 1.0, 100.0, -2.0);
+    assert!(
+        matches!(&over, Err(m) if m.contains("Positionsdeckel")),
+        "{over:?}"
+    );
+
+    // Buy schließt den Short (Reduktion ist immer erlaubt).
+    let mut back = ExposureLimit::new(200.0).allow_shorts(true);
+    back.check(Side::Sell, 1.0, 100.0, 0.0).expect("short");
+    assert!(back.check(Side::Buy, 1.0, 100.0, -1.0).is_ok());
+}
+
+#[test]
+fn exposure_cap_allows_flipping_own_long_into_short_when_enabled() {
+    // Ein Lauf, der 1 gekauft hat, darf sie schließen und ins Short drehen (Deckel 300).
+    let mut limit = ExposureLimit::new(300.0).allow_shorts(true);
+    assert!(limit.check(Side::Buy, 1.0, 100.0, 0.0).is_ok());
+    // Close + Short: 2 @ 100, Bestand 1 → Laufposition -1 = 100 ≤ 300.
+    assert!(limit.check(Side::Sell, 2.0, 100.0, 1.0).is_ok());
+    // Ohne erlaubte Shorts bliebe derselbe Flip abgelehnt.
+    let mut long_only = ExposureLimit::new(300.0);
+    long_only.check(Side::Buy, 1.0, 100.0, 0.0).expect("buy");
+    let flip = long_only.check(Side::Sell, 2.0, 100.0, 1.0);
+    assert!(
+        matches!(&flip, Err(m) if m.contains("übersteigt")),
+        "{flip:?}"
+    );
+}
+
+#[test]
 fn mainnet_cap_validation() {
     assert!(valid_mainnet_cap(Some(20.0)));
     assert!(valid_mainnet_cap(Some(MAINNET_HARD_CAP)));
@@ -424,4 +477,29 @@ async fn non_positive_cap_is_rejected_even_on_testnet() {
         .run(&[35000.0], Some(1000.0), Network::Testnet, 0.001)
         .await;
     assert!(matches!(result, Err(LiveLoopError::NetworkError(_))));
+}
+
+#[test]
+fn long_only_rejects_sell_without_position() {
+    // Ohne Deckel und ohne vorherigen Kauf darf ein Sell keine Kurzposition oeffnen.
+    let mut guard = LongOnlyGuard::new();
+    let r = guard.check(Side::Sell, 0.19, 0.0);
+    assert!(r.is_err(), "Sell bei flacher Position muss abgelehnt werden: {r:?}");
+}
+
+#[test]
+fn long_only_allows_sell_of_the_run_position() {
+    // Erst kaufen (Lauf-Baseline 0), dann genau die gekaufte Menge verkaufen.
+    let mut guard = LongOnlyGuard::new();
+    assert!(guard.check(Side::Buy, 5.0, 0.0).is_ok());
+    assert!(guard.check(Side::Sell, 5.0, 5.0).is_ok());
+}
+
+#[test]
+fn long_only_never_sells_pre_existing_stock() {
+    // Vorbestand 3: er zaehlt nicht zur Laufposition, ein Verkauf daraus scheitert.
+    let mut guard = LongOnlyGuard::new();
+    assert!(guard.check(Side::Buy, 1.0, 3.0).is_ok());
+    let r = guard.check(Side::Sell, 4.0, 4.0);
+    assert!(r.is_err(), "Vorbestand darf nicht verkauft werden: {r:?}");
 }

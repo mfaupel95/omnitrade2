@@ -10,6 +10,7 @@ use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
 
 pub(crate) const BUY_BELOW_40K: &str = "if close() < 40000 { buy() }";
+pub(crate) const SELL_ABOVE_40K: &str = "if close() > 40000 { sell() }";
 
 pub(crate) type Log = Arc<Mutex<Vec<String>>>;
 /// Stream-Mock: liefert vorbereitete Kerzen und protokolliert die Aufrufreihenfolge.
@@ -138,11 +139,18 @@ pub(crate) struct Harness {
     pub(crate) cancelled: Arc<Mutex<Vec<String>>>,
     pub(crate) kill: PathBuf,
     pub(crate) cap: Option<f64>,
+    pub(crate) allow_shorts: bool,
 }
 
 impl Harness {
     pub(crate) fn with_cap(mut self, cap: f64) -> Self {
         self.cap = Some(cap);
+        self
+    }
+
+    /// Erlaubt Kurzpositionen (Sell bei flacher Position öffnet Short).
+    pub(crate) fn with_allow_shorts(mut self) -> Self {
+        self.allow_shorts = true;
         self
     }
 
@@ -162,6 +170,7 @@ impl Harness {
                 std::process::id()
             )),
             cap: None,
+            allow_shorts: false,
         }
     }
 
@@ -206,6 +215,7 @@ impl Harness {
             max_notional: self.cap,
             interval: "1m",
             warmup: &[],
+            allow_shorts: self.allow_shorts,
         };
         let mut guard = RiskGuard::testnet();
         live_loop(&config, stream, trading, &mut guard, &mut status).await
