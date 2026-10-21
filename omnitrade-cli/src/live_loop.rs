@@ -26,8 +26,8 @@ mod test_support;
 mod tests;
 
 pub(crate) use risk::{
-    account_equity, check_liquidation_distance, held_base, split_symbol, valid_mainnet_cap,
-    ExposureLimit, LongOnlyGuard,
+    account_equity, bewertungs_waehrung, check_liquidation_distance, held_base, split_symbol,
+    valid_mainnet_cap, ExposureLimit, LongOnlyGuard,
 };
 
 /// Maximale Anzahl Kerzen, die für die Skript-Auswertung vorgehalten werden.
@@ -168,6 +168,9 @@ pub const MAINNET_HARD_CAP: f64 = 100.0;
 /// do not halt the loop. The loop continues monitoring for new signals.
 pub async fn live_loop(
     config: &LiveConfig<'_>,
+    // Abrechnungswaehrung des Instruments (`settleCcy`, z. B. USDC bei XPERP).
+    // `None` = die Quote des Symbols gilt (Spot bzw. Konto in der Quote-Waehrung).
+    settle_currency: Option<&str>,
     mut exchange_stream: impl ExchangeStream,
     exchange_trading: impl ExchangeTrading,
     risk_guard: &mut RiskGuard,
@@ -309,6 +312,18 @@ pub async fn live_loop(
             let overflow = candle_buffer.len() - MAX_CANDLE_BUFFER;
             candle_buffer.drain(..overflow);
         }
+        // Das Buch folgt der BOERSE: eine Position kann auch ohne diesen Lauf
+        // entstehen oder vergehen (Handschluss, Stop, ein zweiter Prozess). Der
+        // eigene Zaehler in record_order ist nur die Zwischenanzeige bis zur
+        // naechsten Kerze; scheitert der Abruf, bleibt der alte Wert stehen und
+        // wird geloggt - nie stillschweigend auf 0 gesetzt.
+        match exchange_trading.position_snapshot(symbol).await {
+            Ok(snapshot) => status.set_net_quantity(snapshot.base_qty),
+            Err(err) => {
+                warn!("Position nicht abrufbar ({err}) - Buch bleibt auf dem letzten Stand")
+            }
+        }
+
         trace!("Evaluating candle: {:?}", candle);
 
         // Evaluate strategy script against accumulated candles
@@ -346,6 +361,7 @@ pub async fn live_loop(
             &order_req,
             candle.close,
             initial_capital,
+            settle_currency,
             exposure.as_mut(),
             if allow_shorts {
                 None
@@ -440,17 +456,25 @@ pub(crate) async fn place_order_with_risk_check(
         initial_capital,
         None,
         None,
+        None,
     )
     .await
 }
 
 /// Wie [`place_order_with_risk_check`], zusätzlich mit optionalem Positionsdeckel.
+///
+/// Acht Parameter, weil der Risikopfad alles braucht, was die Schleife ohnehin
+/// hält (Konto, Deckel, Long-only, Startkapital, Abrechnungswaehrung). Ein
+/// Struktur-Umbau waere hier Umbau ohne Gewinn - die Funktion hat zwei Aufrufer.
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn place_order_guarded(
     exchange_trading: &impl ExchangeTrading,
     risk_guard: &mut RiskGuard,
     order_req: &OrderRequest,
     current_price: f64,
     initial_capital: f64,
+    // Abrechnungswaehrung des Instruments; `None` = Quote des Symbols.
+    settle_currency: Option<&str>,
     exposure: Option<&mut ExposureLimit>,
     long_only: Option<&mut LongOnlyGuard>,
 ) -> Result<omnitrade_core::Order, LiveLoopError> {
@@ -521,7 +545,11 @@ pub(crate) async fn place_order_guarded(
         .await
         .map_err(|e| LiveLoopError::ExchangeError(format!("Position: {e}")))?;
     check_liquidation_distance(&position, order_req.side).map_err(LiveLoopError::RiskViolation)?;
-    let equity = account_equity(&balances, &base, &quote, current_price, &position);
+    // Bewertungswaehrung: bei XPERP traegt das Konto USDC, das Symbol sagt "USD".
+    // Ohne diese Aufloesung findet pair_equity keinen Bestand, die Equity faellt
+    // auf den uPnL zusammen und der Drawdown schiesst ins Millionenprozent.
+    let waehrung = bewertungs_waehrung(&balances, &quote, settle_currency);
+    let equity = account_equity(&balances, &base, waehrung, current_price, &position);
 
     let held = held_base(&balances, &base, &position);
     // Long-only zuerst: sie gilt unabhaengig davon, ob ein Deckel gesetzt ist.

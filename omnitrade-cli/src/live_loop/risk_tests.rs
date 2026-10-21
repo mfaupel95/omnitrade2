@@ -484,7 +484,10 @@ fn long_only_rejects_sell_without_position() {
     // Ohne Deckel und ohne vorherigen Kauf darf ein Sell keine Kurzposition oeffnen.
     let mut guard = LongOnlyGuard::new();
     let r = guard.check(Side::Sell, 0.19, 0.0);
-    assert!(r.is_err(), "Sell bei flacher Position muss abgelehnt werden: {r:?}");
+    assert!(
+        r.is_err(),
+        "Sell bei flacher Position muss abgelehnt werden: {r:?}"
+    );
 }
 
 #[test]
@@ -502,4 +505,55 @@ fn long_only_never_sells_pre_existing_stock() {
     assert!(guard.check(Side::Buy, 1.0, 3.0).is_ok());
     let r = guard.check(Side::Sell, 4.0, 4.0);
     assert!(r.is_err(), "Vorbestand darf nicht verkauft werden: {r:?}");
+}
+
+/// XPERP traegt im Symbol `USD`, das Konto fuehrt USDC. Wer die Quote nimmt,
+/// findet keinen Bestand, bewertet das Konto mit 0 und der RiskGuard misst einen
+/// Drawdown von Millionen Prozent (gemessen 21.10.2026: 4.688.672 %).
+#[test]
+fn equity_nimmt_die_abrechnungswaehrung_wenn_die_quote_fehlt() {
+    let konto = |paare: &[(&str, f64)]| Account {
+        balances: paare
+            .iter()
+            .map(|(ccy, wert)| {
+                (
+                    (*ccy).to_string(),
+                    AccountBalance {
+                        free: *wert,
+                        locked: 0.0,
+                    },
+                )
+            })
+            .collect(),
+    };
+    let xperp = konto(&[("USDC", 46.43), ("SOL", 0.0)]);
+
+    // Act: Bewertungswaehrung und Equity eines offenen Shorts.
+    let waehrung = bewertungs_waehrung(&xperp, "USD", Some("USDC"));
+    let equity = account_equity(
+        &xperp,
+        "SOL",
+        waehrung,
+        106.46,
+        &PositionSnapshot {
+            is_perpetual: true,
+            base_qty: -0.1,
+            unrealized_pnl: -0.13,
+            liq_price: None,
+            mark_price: None,
+        },
+    );
+
+    // Assert: der Kontobestand zaehlt, nicht die leere Quote.
+    assert_eq!(waehrung, "USDC");
+    assert!(
+        (equity - 46.30).abs() < 1e-9,
+        "Equity muss 46.43 USDC + (-0.13) uPnL sein, war {equity}"
+    );
+
+    // Gegenprobe 1: traegt das Konto die Quote, bleibt sie die Bewertungswaehrung.
+    let swap = konto(&[("USDT", 100.0)]);
+    assert_eq!(bewertungs_waehrung(&swap, "USDT", Some("USDT")), "USDT");
+    // Gegenprobe 2: weder Quote noch Abrechnung vorhanden -> alte Regel, kein Panikwert.
+    assert_eq!(bewertungs_waehrung(&swap, "USD", Some("USDC")), "USD");
 }

@@ -278,3 +278,67 @@ fn puffer_aus_rest_deckelt_auf_die_puffergroesse() {
         1_000 + 539 * 1_000
     );
 }
+
+/// Das Buch folgt der BOERSE, nicht dem eigenen Zaehler: eine Position, die
+/// dieser Lauf nie geordert hat (Handschluss, Stop, ein zweiter Prozess), steht
+/// nach der naechsten Kerze im Status. Genau das fehlte am 21.10.2026, als der
+/// Lauf -0.1 SOL fuehrte, waehrend die Boerse flach war.
+#[tokio::test]
+async fn buch_uebernimmt_die_boersenposition_ohne_eigenen_auftrag() {
+    // Arrange: Strategie handelt nie, die Boerse meldet -0.4.
+    let h = Harness::new("buch-boerse", "if close() < 1 { buy() }")
+        .with_position(-0.4)
+        .with_status_file("buch-boerse");
+
+    // Act
+    let result = h.run(&[100.0], Some(1000.0), Network::Testnet, 0.1).await;
+
+    // Assert: kein Auftrag, aber das Buch zeigt die Boersenposition.
+    assert!(result.is_ok());
+    assert!(
+        h.placed.lock().expect("placed").is_empty(),
+        "ohne Signal darf kein Auftrag rausgehen"
+    );
+    let pfad = h.status_pfad.as_ref().expect("Statuspfad gesetzt");
+    let roh = std::fs::read_to_string(pfad).expect("Status-Datei");
+    let wert: serde_json::Value = serde_json::from_str(&roh).expect("Status ist JSON");
+    assert_eq!(
+        wert["net_quantity"], -0.4,
+        "Buch muss die Boersenposition tragen, nicht den eigenen Zaehler: {roh}"
+    );
+}
+
+/// Der Fehler vom 21.10.2026 im echten Ablauf: XPERP-Symbol mit Quote `USD`,
+/// Konto fuehrt USDC. Mit der Quote bewertet der RiskGuard das Konto mit 0, misst
+/// einen Drawdown von Millionen Prozent und lehnt JEDEN Auftrag ab. Mit der
+/// Abrechnungswaehrung des Instruments geht derselbe Auftrag durch.
+#[tokio::test]
+async fn xperp_auftrag_wird_nicht_am_erfundenen_drawdown_abgelehnt() {
+    // Arrange: Symbol sagt USD, Konto fuehrt USDC, Abrechnung ist USDC.
+    // Die Attrappe wird je Kerze ZWEIMAL befragt: erst fuer das Buch, dann im
+    // Risikopfad. Die Reihe ist deshalb so gelegt, dass der ERSTE Auftrag +0,05
+    // uPnL sieht (das setzt den Peak) und der ZWEITE -0,50. Ohne die
+    // Abrechnungswaehrung steht die Equity dann bei -0,50 gegen einen Peak von
+    // 0,05 - der Guard misst 1100 % Drawdown und lehnt den zweiten Auftrag ab.
+    let h = Harness::new("xperp-usdc", BUY_BELOW_40K)
+        .with_symbol("SOL-USD_UM_XPERP-310404")
+        .with_settle("USDC")
+        .with_konto_waehrung("USDC")
+        .with_position(0.1)
+        .with_upl_reihe(&[0.0, 0.05, 0.0, -0.50])
+        .with_status_file("xperp-usdc");
+
+    // Act
+    let result = h
+        .run(&[35000.0, 36000.0], Some(46.43), Network::Testnet, 0.1)
+        .await;
+
+    // Assert: BEIDE Auftraege gehen raus, statt am erfundenen Drawdown zu scheitern.
+    assert!(result.is_ok(), "Lauf scheiterte: {result:?}");
+    let placed = h.placed.lock().expect("placed");
+    assert_eq!(
+        placed.len(),
+        2,
+        "beide Auftraege muessen durchgehen - sonst rechnet der Guard gegen eine leere Quote"
+    );
+}

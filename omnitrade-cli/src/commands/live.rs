@@ -241,6 +241,7 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
 
                 let outcome = live_loop(
                     &config,
+                    None,
                     stream_client,
                     trading_client,
                     &mut risk_guard,
@@ -264,12 +265,17 @@ pub async fn handle_live(args: &LiveArgs<'_>) -> Result<(), Box<dyn std::error::
                     info!("OKX-API-Domain: {base}");
                     trading_client = trading_client.with_base_url(base);
                 }
-                if is_contract_symbol(symbol) {
-                    prepare_okx_swap(&trading_client, symbol).await?;
-                }
+                // Abrechnungswaehrung des Kontrakts (XPERP: USDC) - sie ist die
+                // Grundlage der Equity-Bewertung im RiskGuard.
+                let settle = if is_contract_symbol(symbol) {
+                    prepare_okx_swap(&trading_client, symbol).await?
+                } else {
+                    None
+                };
 
                 let outcome = live_loop(
                     &config,
+                    settle.as_deref(),
                     stream_client,
                     trading_client,
                     &mut risk_guard,
@@ -406,23 +412,24 @@ fn parse_leverage(raw: &str) -> Result<u32, String> {
 async fn prepare_okx_swap(
     client: &OkxRestClient,
     symbol: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<Option<String>, Box<dyn std::error::Error>> {
     let symbol = symbol.to_uppercase();
     let lever = okx_leverage()?;
     client.ensure_net_mode().await?;
     let inst_type = inst_type_for_symbol(&symbol);
     let inst = client.load_instrument(&symbol, inst_type).await?;
     info!(
-        "{} {symbol}: ctVal {} {}, lotSz {}, minSz {} Kontrakte",
+        "{} {symbol}: ctVal {} {}, lotSz {}, minSz {} Kontrakte, Abrechnung {}",
         inst_type.as_api_str(),
         inst.ct_val,
         symbol.split('-').next().unwrap_or(""),
         inst.lot_sz,
-        inst.min_sz
+        inst.min_sz,
+        inst.settle_ccy.as_deref().unwrap_or("(nicht angegeben)")
     );
     client.set_leverage(&symbol, lever).await?;
     info!("{symbol}: isolated, one-way, Hebel {lever}x");
-    Ok(())
+    Ok(inst.settle_ccy)
 }
 
 /// OKX-Zugänge: Keystore (`omnitrade/okx/<netzwerk>`) hat Vorrang, sonst
