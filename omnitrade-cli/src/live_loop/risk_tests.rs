@@ -499,6 +499,37 @@ fn long_only_allows_sell_of_the_run_position() {
 }
 
 #[test]
+fn liquidation_beim_preis_null_sperrt_das_nachlegen_nicht() {
+    // OKX meldet liqPx "0", wenn es keine Liquidation gibt (1x isolated).
+    // Vorher machte der Parser daraus None und der Guard verweigerte JEDES
+    // Nachlegen ("Liquidationspreis oder Markpreis fehlt", Befund 21.10.2026).
+    let ohne_liq = PositionSnapshot {
+        is_perpetual: true,
+        base_qty: 0.1,
+        unrealized_pnl: 0.0,
+        liq_price: Some(0.0),
+        mark_price: Some(108.27),
+    };
+    assert!(
+        check_liquidation_distance(&ohne_liq, Side::Buy).is_ok(),
+        "ohne Liquidationspreis ist der Abstand 100 % - Nachlegen muss erlaubt sein"
+    );
+
+    // Gegenprobe: eine echte Liquidation dicht am Markpreis sperrt weiterhin.
+    let nah = PositionSnapshot {
+        is_perpetual: true,
+        base_qty: 0.1,
+        unrealized_pnl: 0.0,
+        liq_price: Some(106.0),
+        mark_price: Some(108.27),
+    };
+    assert!(
+        check_liquidation_distance(&nah, Side::Buy).is_err(),
+        "2,1 % Abstand zur Liquidation muss abgelehnt werden"
+    );
+}
+
+#[test]
 fn long_only_never_sells_pre_existing_stock() {
     // Vorbestand 3: er zaehlt nicht zur Laufposition, ein Verkauf daraus scheitert.
     let mut guard = LongOnlyGuard::new();
