@@ -572,7 +572,20 @@ pub(crate) async fn place_order_guarded(
     // Check risk guard
     risk_guard
         .check_order(&mock_order, &account, current_price)
-        .map_err(|e| LiveLoopError::RiskViolation(e.to_string()))?;
+        .map_err(|e| {
+            // Der Guard misst das KONTO (alle Spuren auf demselben Konto), nicht das
+            // Kapital dieses Laufs. Bei einer Ablehnung gehoeren Spitze, Basis und
+            // aktuelle Equity ins Log - sonst bleibt die Ursache (Abbuchung, andere
+            // Spur, uPnL) hinterher nicht mehr feststellbar.
+            tracing::warn!(
+                peak_equity = risk_guard.peak_equity(),
+                run_baseline = ?risk_guard.run_baseline(),
+                equity = equity,
+                declared_initial = initial_capital,
+                "RiskGuard lehnt ab: {e}"
+            );
+            LiveLoopError::RiskViolation(e.to_string())
+        })?;
 
     // Risk check passed; submit order to exchange
     exchange_trading
