@@ -202,7 +202,16 @@ pub async fn live_loop(
             )));
         }
     }
-    let mut exposure = max_notional.map(|cap| ExposureLimit::new(cap).allow_shorts(allow_shorts));
+    // OMNITRADE_ADOPT_POSITION=1: die bei Start offene Position gehoert dem Lauf.
+    let adopt = std::env::var("OMNITRADE_ADOPT_POSITION").is_ok_and(|v| v == "1");
+    if adopt {
+        warn!("OMNITRADE_ADOPT_POSITION=1: bestehende Position wird als Laufposition uebernommen");
+    }
+    let mut exposure = max_notional.map(|cap| {
+        ExposureLimit::new(cap)
+            .allow_shorts(allow_shorts)
+            .adopt_existing(adopt)
+    });
     // Long-only gilt AUCH ohne Deckel: die Bremse haengt nicht an --max-notional.
     let mut long_only = LongOnlyGuard::new();
     if allow_shorts {

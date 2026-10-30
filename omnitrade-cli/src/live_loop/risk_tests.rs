@@ -307,6 +307,19 @@ async fn loss_limit_uses_equity_at_run_start_not_declared_capital() {
 }
 
 #[test]
+fn adopt_existing_counts_startbestand_als_laufposition() {
+    // Bestand 0.2 bei Start; ohne Adopt gilt er als fremd, mit Adopt zaehlt er.
+    let mut fremd = ExposureLimit::new(25.0).allow_shorts(true);
+    assert!(fremd.check(Side::Buy, 0.1, 95.0, 0.2).is_ok());
+    let mut eigen = ExposureLimit::new(25.0).allow_shorts(true).adopt_existing(true);
+    // 0.2 + 0.1 = 0.3 * 95 = 28.5 > 25
+    assert!(eigen.check(Side::Buy, 0.1, 95.0, 0.2).is_err());
+    // Sell reduziert die uebernommene Position, kein Short.
+    let mut eigen = ExposureLimit::new(25.0).allow_shorts(true).adopt_existing(true);
+    assert!(eigen.check(Side::Sell, 0.1, 95.0, 0.2).is_ok());
+}
+
+#[test]
 fn exposure_cap_limits_what_the_run_builds_up() {
     // Arrange: Deckel 200, Preis 100 → höchstens 2 Einheiten Position aus diesem Lauf.
     let mut limit = ExposureLimit::new(200.0);
