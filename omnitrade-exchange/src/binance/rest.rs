@@ -18,7 +18,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 const RECV_WINDOW_MS: u64 = 5000;
 
 /// Binance liefert Zahlen als JSON-Strings ("0.00100000"); akzeptiert beides.
-fn de_f64<'de, D>(d: D) -> Result<f64, D::Error>
+pub(crate) fn de_f64<'de, D>(d: D) -> Result<f64, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -201,6 +201,15 @@ impl ExchangeTrading for BinanceRestClient {
             return Err(ExchangeError::InvalidRequest(
                 "Limit orders require price".to_string(),
             ));
+        }
+
+        // Stop-, Take-Profit- und Trailing-Orders bekommen hier keinen Auslöser. Als MARKET
+        // geschickt würde eine Schutz-Order sofort ausgeführt, also wie beim OKX-Adapter ablehnen.
+        if !matches!(req.order_type, OrderType::Market | OrderType::Limit) {
+            return Err(ExchangeError::InvalidRequest(format!(
+                "Binance-Adapter unterstützt den Ordertyp {:?} nicht",
+                req.order_type
+            )));
         }
 
         let mut params = HashMap::new();
