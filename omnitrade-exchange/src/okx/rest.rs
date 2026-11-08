@@ -10,6 +10,7 @@ use std::sync::RwLock;
 use std::time::Duration;
 
 use omnitrade_core::{Order, OrderStatus, OrderType, Side, TimeInForce};
+use crate::trading::FillDetails;
 use reqwest::Method;
 use serde_json::{json, Value};
 
@@ -205,6 +206,22 @@ fn parse_order(v: &Value) -> Option<Order> {
     })
 }
 
+/// Ausfuehrungsdaten aus einer OKX-Order. None, solange nichts gefuellt ist.
+fn parse_fill(v: &Value) -> Option<FillDetails> {
+    let filled = str_f64(v, "accFillSz");
+    let avg_price = str_f64(v, "avgPx");
+    if filled <= 0.0 || avg_price <= 0.0 {
+        return None;
+    }
+    let fee_ccy = v.get("feeCcy")?.as_str()?.to_string();
+    Some(FillDetails {
+        filled,
+        avg_price,
+        fee: str_f64(v, "fee"),
+        fee_ccy,
+    })
+}
+
 fn parse_balance(data: &[Value]) -> Account {
     let mut balances = std::collections::HashMap::new();
     for detail in data
@@ -356,6 +373,23 @@ impl ExchangeTrading for OkxRestClient {
                 .and_then(parse_order)
                 .map(|o| self.to_base_units(o))
                 .transpose(),
+            Err(ExchangeError::ApiError(msg)) if msg.starts_with(ORDER_NOT_FOUND) => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
+
+    async fn fill_details(
+        &self,
+        order_id: &str,
+        symbol: &str,
+    ) -> Result<Option<FillDetails>, ExchangeError> {
+        let path = format!(
+            "/api/v5/trade/order?instId={}&ordId={}",
+            urlencoding::encode(symbol),
+            urlencoding::encode(order_id)
+        );
+        match self.call(Method::GET, &path, None).await {
+            Ok(data) => Ok(data.first().and_then(parse_fill)),
             Err(ExchangeError::ApiError(msg)) if msg.starts_with(ORDER_NOT_FOUND) => Ok(None),
             Err(e) => Err(e),
         }

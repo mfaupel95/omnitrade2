@@ -40,6 +40,18 @@ impl OrderRequest {
     }
 }
 
+/// Ausfuehrungsdaten einer Order, soweit die Boerse sie liefert.
+///
+/// `fee` ist die Gebuehr mit Vorzeichen wie von der Boerse (Kosten negativ).
+/// `fee_ccy` ist die Waehrung, in der sie abgezogen wurde.
+#[derive(Debug, Clone, PartialEq)]
+pub struct FillDetails {
+    pub filled: f64,
+    pub avg_price: f64,
+    pub fee: f64,
+    pub fee_ccy: String,
+}
+
 /// Account balance snapshot.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountBalance {
@@ -110,6 +122,17 @@ pub trait ExchangeTrading: Send + Sync {
             .parse()
             .map_err(|_| ExchangeError::InvalidRequest("Invalid order ID format".to_string()))?;
         Ok(orders.into_iter().find(|o| o.id == order_id_num))
+    }
+
+    /// Ausfuehrungsdaten (Durchschnittspreis, Gebuehr) einer Order.
+    ///
+    /// Standard: unbekannt (None). Boersen, die diese Daten liefern, ueberschreiben es.
+    async fn fill_details(
+        &self,
+        _order_id: &str,
+        _symbol: &str,
+    ) -> Result<Option<FillDetails>, ExchangeError> {
+        Ok(None)
     }
 
     /// Offene Position im Symbol. Spot hat keine Positionen: der Default liefert null.

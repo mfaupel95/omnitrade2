@@ -138,3 +138,25 @@ async fn place_order_validates_before_any_request() {
         Err(ExchangeError::InvalidRequest(_))
     ));
 }
+
+#[test]
+fn parse_fill_liest_durchschnittspreis_und_gebuehr() {
+    let v: Value = serde_json::from_str(
+        r#"{"instId":"BTC-USDC","ordId":"7","side":"buy","state":"filled","accFillSz":"0.01","avgPx":"78010.5","fee":"-0.0000001","feeCcy":"BTC"}"#,
+    )
+    .unwrap();
+    let f = parse_fill(&v).expect("gefuellt");
+    assert!((f.filled - 0.01).abs() < 1e-12);
+    assert!((f.avg_price - 78010.5).abs() < 1e-9);
+    assert!((f.fee + 0.0000001).abs() < 1e-15);
+    assert_eq!(f.fee_ccy, "BTC");
+}
+
+#[test]
+fn parse_fill_ohne_fuellung_ist_none() {
+    let v: Value = serde_json::from_str(
+        r#"{"instId":"BTC-USDC","ordId":"7","state":"live","accFillSz":"0","avgPx":"","fee":"0","feeCcy":"USDC"}"#,
+    )
+    .unwrap();
+    assert!(parse_fill(&v).is_none());
+}
