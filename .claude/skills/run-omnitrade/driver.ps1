@@ -38,9 +38,16 @@ public static class Win32 {
 Add-Type -AssemblyName System.Drawing
 [void][Win32]::SetProcessDPIAware()
 
+# Nur das vom Treiber selbst gestartete GUI (PID aus ui.pid) gilt als Testinstanz.
+# Irgendein offenes omnitrade-ui - etwa ein manuell gestarteter Live-Lauf - wird nie
+# angefasst: sein Not-Aus wuerde den echten Handel stoppen.
 function Get-Gui {
-    Get-Process -Name 'omnitrade-ui' -ErrorAction SilentlyContinue |
-        Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+    $pidFile = Join-Path $Run 'ui.pid'
+    if (-not (Test-Path $pidFile)) { return $null }
+    $id = 0
+    if (-not [int]::TryParse((Get-Content $pidFile | Select-Object -First 1), [ref]$id)) { return $null }
+    Get-Process -Id $id -ErrorAction SilentlyContinue |
+        Where-Object { $_.ProcessName -eq 'omnitrade-ui' -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
 }
 
 function Wait-Gui {
@@ -79,7 +86,9 @@ function Invoke-GuiClick([int]$x, [int]$y, [scriptblock]$Done) {
 }
 
 function Invoke-Start {
-    if (Get-Gui) { Write-Output 'GUI laeuft bereits'; return }
+    if (Get-Gui) { Write-Output 'GUI laeuft bereits (Treiber-Instanz)'; return }
+    $fremd = Get-Process -Name 'omnitrade-ui' -ErrorAction SilentlyContinue
+    if ($fremd) { throw "fremde omnitrade-ui-Instanz laeuft (PID $($fremd.Id -join ', ')) - Abbruch, damit deren Not-Aus nicht angesteuert wird. Erst beenden." }
     $bin = Join-Path $Bin 'omnitrade-ui.exe'
     if (-not (Test-Path $bin)) { throw 'omnitrade-ui.exe fehlt - zuerst: driver.ps1 build' }
     Remove-Item -Force -ErrorAction SilentlyContinue $KillFile
@@ -158,14 +167,21 @@ function Invoke-Cli {
     if (-not (Test-Path $cli)) { throw 'omnitrade-cli.exe fehlt - zuerst: driver.ps1 build' }
     Invoke-Fetch
     $csv = Join-Path $Run 'btc_1h.csv'
-    & $cli validate --script (Join-Path $SkillDir 'sample_buy.omni')
-    & $cli validate --script (Join-Path $SkillDir 'sample_rsi.omni')
-    & $cli backtest --script (Join-Path $SkillDir 'sample_buy.omni') --data $csv --initial-balance 1000000
-    & $cli backtest --script (Join-Path $SkillDir 'sample_rsi.omni') --data $csv --initial-balance 1000000
+    $schritte = @(
+        @('validate', '--script', (Join-Path $SkillDir 'sample_buy.omni')),
+        @('validate', '--script', (Join-Path $SkillDir 'sample_rsi.omni')),
+        @('backtest', '--script', (Join-Path $SkillDir 'sample_buy.omni'), '--data', $csv, '--initial-balance', '1000000'),
+        @('backtest', '--script', (Join-Path $SkillDir 'sample_rsi.omni'), '--data', $csv, '--initial-balance', '1000000')
+    )
+    foreach ($s in $schritte) {
+        & $cli @s
+        # Native Exitcodes werden nicht automatisch zu Fehlern - sonst meldet ein Fehlschlag Erfolg.
+        if ($LASTEXITCODE -ne 0) { throw "omnitrade-cli $($s[0]) fehlgeschlagen (Exitcode $LASTEXITCODE)" }
+    }
 }
 
 switch ($Cmd) {
-    'build' { Set-Location $Root; cargo build --workspace }
+    'build' { Set-Location $Root; cargo build --workspace; if ($LASTEXITCODE -ne 0) { throw "cargo build fehlgeschlagen (Exitcode $LASTEXITCODE)" } }
     'flow' { Invoke-Start; Invoke-Shot '01_start'; Invoke-Killswitch; Invoke-Reset; Invoke-Status }
     'start' { Invoke-Start }
     'shot' { Invoke-Shot $Name }
