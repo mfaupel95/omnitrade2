@@ -315,12 +315,17 @@ async fn buch_uebernimmt_die_boersenposition_ohne_eigenen_auftrag() {
 #[tokio::test]
 async fn xperp_auftrag_wird_nicht_am_erfundenen_drawdown_abgelehnt() {
     // Arrange: Symbol sagt USD, Konto fuehrt USDC, Abrechnung ist USDC.
+    // Zwei Sell-Signale statt Kaeufe: Der Mock fuehrt keine Fills, die Position
+    // bleibt long 0,1 - ein Kauf waere ein Nachkauf und wird verworfen. Die
+    // Verkaeufe schliessen die Long-Position; mit erlaubten Shorts greift die
+    // Long-only-Bremse nicht, die hier nicht geprueft wird.
     // Die Attrappe wird je Kerze ZWEIMAL befragt: erst fuer das Buch, dann im
     // Risikopfad. Die Reihe ist deshalb so gelegt, dass der ERSTE Auftrag +0,05
     // uPnL sieht (das setzt den Peak) und der ZWEITE -0,50. Ohne die
     // Abrechnungswaehrung steht die Equity dann bei -0,50 gegen einen Peak von
     // 0,05 - der Guard misst 1100 % Drawdown und lehnt den zweiten Auftrag ab.
-    let h = Harness::new("xperp-usdc", BUY_BELOW_40K)
+    let h = Harness::new("xperp-usdc", SELL_ABOVE_40K)
+        .with_allow_shorts()
         .with_symbol("SOL-USD_UM_XPERP-310404")
         .with_settle("USDC")
         .with_konto_waehrung("USDC")
@@ -330,7 +335,7 @@ async fn xperp_auftrag_wird_nicht_am_erfundenen_drawdown_abgelehnt() {
 
     // Act
     let result = h
-        .run(&[35000.0, 36000.0], Some(46.43), Network::Testnet, 0.1)
+        .run(&[45000.0, 46000.0], Some(46.43), Network::Testnet, 0.1)
         .await;
 
     // Assert: BEIDE Auftraege gehen raus, statt am erfundenen Drawdown zu scheitern.
@@ -341,4 +346,44 @@ async fn xperp_auftrag_wird_nicht_am_erfundenen_drawdown_abgelehnt() {
         2,
         "beide Auftraege muessen durchgehen - sonst rechnet der Guard gegen eine leere Quote"
     );
+}
+
+/// Regression zum Codex-P1 auf PR #9: Mit `allow_shorts` darf ein Buy eine offene
+/// Kurzposition nicht als "flat" behandeln, und ein Sell bei Short kein zweites
+/// Mal oeffnen. Die Richtung kommt aus der signierten Boersenposition.
+#[test]
+fn order_side_folgt_der_signierten_boersenposition() {
+    use omnitrade_script::Signal::{Buy, Hold, Sell};
+
+    // Flat: Buy oeffnet long, Sell oeffnet nur mit Shorts.
+    assert_eq!(order_side(Buy, 0.0, false), Some(Side::Buy));
+    assert_eq!(order_side(Sell, 0.0, false), None);
+    assert_eq!(order_side(Sell, 0.0, true), Some(Side::Sell));
+
+    // Long: kein Nachkauf, Sell schliesst.
+    assert_eq!(order_side(Buy, 0.5, true), None);
+    assert_eq!(order_side(Sell, 0.5, true), Some(Side::Sell));
+
+    // Short: Sell legt nicht nach, Buy schliesst den Short (nicht als flat behandeln).
+    assert_eq!(order_side(Sell, -0.5, true), None);
+    assert_eq!(order_side(Buy, -0.5, true), Some(Side::Buy));
+
+    // Hold ordert nie.
+    assert_eq!(order_side(Hold, 0.0, true), None);
+    assert_eq!(order_side(Hold, -0.5, true), None);
+}
+
+#[tokio::test]
+async fn buy_signal_while_already_long_is_skipped() {
+    // Arrange: Börse meldet bereits eine Long-Position; ein weiteres Kaufsignal darf nichts ordern.
+    let h = Harness::new("buy-while-long", BUY_BELOW_40K).with_position(0.1);
+
+    // Act
+    let result = h
+        .run(&[35000.0], Some(1000.0), Network::Testnet, 0.001)
+        .await;
+
+    // Assert
+    assert!(result.is_ok());
+    assert!(h.placed.lock().expect("placed").is_empty());
 }

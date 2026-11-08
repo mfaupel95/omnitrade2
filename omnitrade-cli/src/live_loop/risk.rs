@@ -146,6 +146,30 @@ pub(crate) fn check_liquidation_distance(
     Ok(())
 }
 
+/// Realisierter PnL beim Verringern einer Perpetual-Position. Er entspricht dem
+/// zuletzt bekannten unrealisierten PnL des geschlossenen Anteils. Ein Vorzeichenwechsel
+/// schliesst die alte Position ganz. Naeherung: Gebuehren und die Abweichung zwischen
+/// Marktpreis und Fuellpreis fehlen.
+pub(crate) fn realisiert_beim_schliessen(
+    vorher: &PositionSnapshot,
+    nachher: &PositionSnapshot,
+) -> f64 {
+    if !vorher.is_perpetual || vorher.base_qty == 0.0 {
+        return 0.0;
+    }
+    let alt = vorher.base_qty;
+    let neu = nachher.base_qty;
+    let geschlossen = if neu == 0.0 || neu.signum() != alt.signum() {
+        alt.abs()
+    } else {
+        (alt.abs() - neu.abs()).max(0.0)
+    };
+    if geschlossen <= 0.0 {
+        return 0.0;
+    }
+    vorher.unrealized_pnl * (geschlossen / alt.abs()).min(1.0)
+}
+
 /// Menge, auf die der Positionsdeckel wirkt: bei Perpetuals die Positionsmenge,
 /// bei Spot der Bestand. Sonst wäre der Deckel bei Perpetuals immer 0 und wirkungslos.
 pub(crate) fn held_base(account: &Account, base: &str, position: &PositionSnapshot) -> f64 {
@@ -172,6 +196,14 @@ pub(crate) struct LongOnlyGuard {
 impl LongOnlyGuard {
     pub(crate) fn new() -> Self {
         Self { start_base: None }
+    }
+
+    /// Übernimmt eine bestehende Position als Laufposition (wie [`ExposureLimit::adopt_existing`]).
+    pub(crate) fn adopt_existing(mut self, adopt: bool) -> Self {
+        if adopt {
+            self.start_base = Some(0.0);
+        }
+        self
     }
 
     /// `held` ist die aktuelle NETTO-Position (`held_base`).
@@ -218,6 +250,18 @@ impl ExposureLimit {
             start_base: None,
             allow_shorts: false,
         }
+    }
+
+    /// Uebernimmt den Bestand beim Start als Laufposition (Baseline 0 statt
+    /// Bestand beim ersten Auftrag). Fuer den Neustart eines Laufs, dessen
+    /// Position an der Boerse offen blieb: sonst bliebe sie "fremd" und der
+    /// Lauf koennte sie nie schliessen. Der Deckel zaehlt sie dann mit.
+    #[must_use]
+    pub(crate) fn adopt_existing(mut self, adopt: bool) -> Self {
+        if adopt {
+            self.start_base = Some(0.0);
+        }
+        self
     }
 
     /// Erlaubt Kurzpositionen: Sell-Signale dürfen die Baseline unterschreiten
