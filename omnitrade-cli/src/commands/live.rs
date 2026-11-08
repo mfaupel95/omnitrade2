@@ -441,12 +441,19 @@ async fn prepare_okx_swap(
     Ok(settle)
 }
 
-/// OKX-Zugänge: Keystore (`omnitrade/okx/<netzwerk>`) hat Vorrang, sonst
-/// `OKX_API_KEY`/`OKX_API_SECRET`. Die API-Passphrase kommt immer aus `OKX_PASSPHRASE`.
+/// OKX-Zugänge: `OKX_ENV_ONLY=1` erzwingt die zusammengehörenden
+/// `OKX_API_KEY`/`OKX_API_SECRET`/`OKX_PASSPHRASE`; sonst hat der Keystore Vorrang.
 fn load_okx_credentials(
     network: Network,
 ) -> Result<(credentials::ApiCredentials, String), Box<dyn std::error::Error>> {
-    let creds = if Keystore::credentials_exist("okx", network) {
+    let env_only = std::env::var("OKX_ENV_ONLY").is_ok_and(|v| v == "1");
+    let creds = if env_only {
+        let key =
+            std::env::var("OKX_API_KEY").map_err(|_| "OKX_ENV_ONLY=1 requires OKX_API_KEY")?;
+        let secret = std::env::var("OKX_API_SECRET")
+            .map_err(|_| "OKX_ENV_ONLY=1 requires OKX_API_SECRET")?;
+        credentials::ApiCredentials::new(key, secret, network)
+    } else if Keystore::credentials_exist("okx", network) {
         Keystore::load_credentials("okx", network).map_err(|e| format!("Keystore: {e}"))?
     } else {
         let key = std::env::var("OKX_API_KEY").map_err(|_| {
@@ -456,8 +463,13 @@ fn load_okx_credentials(
             .map_err(|_| "OKX_API_SECRET environment variable not set")?;
         credentials::ApiCredentials::new(key, secret, network)
     };
-    let passphrase = std::env::var("OKX_PASSPHRASE")
-        .map_err(|_| "OKX_PASSPHRASE environment variable not set")?;
+    let passphrase = std::env::var("OKX_PASSPHRASE").map_err(|_| {
+        if env_only {
+            "OKX_ENV_ONLY=1 requires OKX_PASSPHRASE"
+        } else {
+            "OKX_PASSPHRASE environment variable not set"
+        }
+    })?;
     Ok((creds, passphrase))
 }
 
