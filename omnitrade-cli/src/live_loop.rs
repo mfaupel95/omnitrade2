@@ -443,7 +443,16 @@ pub async fn live_loop(
             Ok(order) => {
                 info!("Order filled: {:?}", order);
                 let side_name = if side == Side::Buy { "buy" } else { "sell" };
-                status.record_order(side_name, qty, candle.close, "placed", "");
+                // Ausfuehrungsdaten sind best effort: ohne sie bleiben Gebuehr und
+                // Slippage im Status als unvollstaendig markiert, der Lauf laeuft weiter.
+                let fill = match exchange_trading.fill_details(&order.id.to_string(), symbol).await {
+                    Ok(f) => f,
+                    Err(e) => {
+                        warn!("Ausfuehrungsdaten nicht lesbar: {}", e);
+                        None
+                    }
+                };
+                status.record_order_fill(side_name, qty, candle.close, "placed", "", fill.as_ref());
                 flush_status(status);
             }
             Err(e) => {
