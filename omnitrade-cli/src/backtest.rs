@@ -177,22 +177,38 @@ fn entry_price(acc: &AccountState, sym: &str, side: Side, c: &Candle) -> f64 {
 /// ab der Eroeffnung scharf (`pct` unter dem Einstieg), nicht erst nach einem
 /// hoeheren Hoch.
 fn long_levels(intent: &OrderIntent, entry: f64) -> (Option<f64>, Option<f64>, Option<f64>, f64) {
-    let mut stop = intent.stop_loss;
+    // Prozentwerte schlagen absolute Kurse auf derselben Seite. Long: Stop unter, TP ueber dem Einstieg.
+    let mut stop = match intent.stop_loss_pct {
+        Some(p) => Some(entry * (1.0 - p)),
+        None => intent.stop_loss,
+    };
     if let Some(pct) = intent.trailing_pct {
         let armed = entry * (1.0 - pct);
         stop = Some(stop.map_or(armed, |s| s.max(armed)));
     }
-    (stop, intent.take_profit, intent.trailing_pct, entry)
+    let take = match intent.take_profit_pct {
+        Some(p) => Some(entry * (1.0 + p)),
+        None => intent.take_profit,
+    };
+    (stop, take, intent.trailing_pct, entry)
 }
 
 /// Spiegelbild von `long_levels` fuer Shorts: Trailing-Stop `pct` ueber dem Einstieg.
 fn short_levels(intent: &OrderIntent, entry: f64) -> (Option<f64>, Option<f64>, Option<f64>, f64) {
-    let mut stop = intent.stop_loss;
+    // Spiegelbild fuer Shorts: Stop ueber, TP unter dem Einstieg.
+    let mut stop = match intent.stop_loss_pct {
+        Some(p) => Some(entry * (1.0 + p)),
+        None => intent.stop_loss,
+    };
     if let Some(pct) = intent.trailing_pct {
         let armed = entry * (1.0 + pct);
         stop = Some(stop.map_or(armed, |s| s.min(armed)));
     }
-    (stop, intent.take_profit, intent.trailing_pct, entry)
+    let take = match intent.take_profit_pct {
+        Some(p) => Some(entry * (1.0 - p)),
+        None => intent.take_profit,
+    };
+    (stop, take, intent.trailing_pct, entry)
 }
 
 /// Ausloesung eines Long-Schutzes auf einer Kerze. Liefert Kurs, Art und ob der

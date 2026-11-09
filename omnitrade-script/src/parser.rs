@@ -76,6 +76,8 @@ impl<'a> Parser<'a> {
                     "stop_loss" => self.parse_stop_loss_stmt()?,
                     "take_profit" => self.parse_take_profit_stmt()?,
                     "trailing_stop" => self.parse_trailing_stop_stmt()?,
+                    "stop_loss_pct" => self.parse_pct_stmt(Stmt::StopLossPct)?,
+                    "take_profit_pct" => self.parse_pct_stmt(Stmt::TakeProfitPct)?,
                     _ => Stmt::ExprStmt(self.parse_expr()?),
                 }
             }
@@ -133,6 +135,15 @@ impl<'a> Parser<'a> {
         } else {
             Stmt::SignalSell
         })
+    }
+
+    /// Gemeinsamer Parser fuer name(ausdruck)-Direktiven mit einem Zahlwert.
+    fn parse_pct_stmt(&mut self, make: fn(Expr) -> Stmt) -> Result<Stmt, ScriptError> {
+        self.advance(); // consume directive name
+        self.consume(&Token::LParen, "expected '(' after risk directive")?;
+        let expr = self.parse_expr()?;
+        self.consume(&Token::RParen, "expected ')' after risk directive value")?;
+        Ok(make(expr))
     }
 
     fn parse_stop_loss_stmt(&mut self) -> Result<Stmt, ScriptError> {
