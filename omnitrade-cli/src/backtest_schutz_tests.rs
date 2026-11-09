@@ -75,3 +75,49 @@ fn genuine_evaluation_error_aborts_instead_of_skipping() {
     let script = "if 1 / 0 > 0 { buy() }\n";
     assert!(run_backtest_with_script_and_candles(script, &candles, &cfg(0.0, 0.0)).is_err());
 }
+
+// Prozentuale Stops und Take-Profits sind seitenrichtig: der Abstand gilt vom Einstieg aus.
+#[test]
+fn long_stop_loss_pct_exits_below_entry() {
+    // Long bei 100, Stop 3 % = 97. Tief bei 90 in der Kerze: Ausfuehrung am Stop, nicht bei 90.
+    let candles = vec![
+        Candle::new(1000, 100.0, 100.0, 100.0, 100.0, 500.0),
+        Candle::new(2000, 100.0, 100.0, 90.0, 90.0, 600.0),
+    ];
+    let script = "stop_loss_pct(0.03); if close() == 100.0 { buy() }\n";
+    let result = run_backtest_with_script_and_candles(script, &candles, &cfg(0.0, 0.001))
+        .expect("backtest must complete");
+    let expected = (97.0 - 100.0) - (97.0 + 100.0) * 0.001;
+    assert_eq!(result.total_trades, 1);
+    assert!((result.total_pnl - expected).abs() < 1e-6);
+}
+
+#[test]
+fn short_stop_loss_pct_exits_above_entry() {
+    // Short bei 100, Stop 3 % = 103. Hoch bei 110: Ausfuehrung am Stop, Verlust 3 %.
+    let candles = vec![
+        Candle::new(1000, 100.0, 100.0, 100.0, 100.0, 500.0),
+        Candle::new(2000, 100.0, 110.0, 100.0, 105.0, 600.0),
+    ];
+    let script = "stop_loss_pct(0.03); if close() == 100.0 { sell() }\n";
+    let result = run_backtest_with_script_and_candles(script, &candles, &cfg(0.0, 0.001))
+        .expect("backtest must complete");
+    let expected = (100.0 - 103.0) - (100.0 + 103.0) * 0.001;
+    assert_eq!(result.total_trades, 1);
+    assert!((result.total_pnl - expected).abs() < 1e-6);
+}
+
+#[test]
+fn short_take_profit_pct_exits_below_entry() {
+    // Short bei 100, Take-Profit 5 % = 95. Tief bei 90: Ausfuehrung am TP mit Gewinn.
+    let candles = vec![
+        Candle::new(1000, 100.0, 100.0, 100.0, 100.0, 500.0),
+        Candle::new(2000, 100.0, 100.0, 90.0, 90.0, 600.0),
+    ];
+    let script = "take_profit_pct(0.05); if close() == 100.0 { sell() }\n";
+    let result = run_backtest_with_script_and_candles(script, &candles, &cfg(0.0, 0.001))
+        .expect("backtest must complete");
+    let expected = (100.0 - 95.0) - (100.0 + 95.0) * 0.001;
+    assert_eq!(result.total_trades, 1);
+    assert!((result.total_pnl - expected).abs() < 1e-6);
+}

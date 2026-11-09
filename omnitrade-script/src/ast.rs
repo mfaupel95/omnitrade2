@@ -88,6 +88,10 @@ pub enum Stmt {
     TakeProfit(Expr),
     /// Set trailing-stop percentage (e.g., 0.05 for 5%).
     TrailingStop(Expr),
+    /// Stop-loss relativ zum Einstieg in Prozent (0.03 = 3 %). Seitenrichtig: Long unter, Short ueber dem Einstieg.
+    StopLossPct(Expr),
+    /// Take-profit relativ zum Einstieg in Prozent. Seitenrichtig: Long ueber, Short unter dem Einstieg.
+    TakeProfitPct(Expr),
     /// Standalone expression statement.
     ExprStmt(Expr),
 }

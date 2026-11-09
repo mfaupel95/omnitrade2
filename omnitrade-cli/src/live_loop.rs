@@ -396,6 +396,8 @@ pub async fn live_loop(
         if intent.stop_loss.is_some()
             || intent.take_profit.is_some()
             || intent.trailing_pct.is_some()
+            || intent.stop_loss_pct.is_some()
+            || intent.take_profit_pct.is_some()
         {
             warn!(
                 "Risiko-Direktive (stop_loss/take_profit/trailing_stop) im Live-Modus nicht unterstützt - Auftrag abgelehnt"

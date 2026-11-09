@@ -18,6 +18,10 @@ pub struct OrderIntent {
     pub take_profit: Option<f64>,
     /// Trailing stop percentage (e.g., 0.05 for 5%).
     pub trailing_pct: Option<f64>,
+    /// Stop-loss relativ zum Einstieg (z. B. 0.03 = 3 %), seitenrichtig ausgewertet.
+    pub stop_loss_pct: Option<f64>,
+    /// Take-profit relativ zum Einstieg (z. B. 0.05 = 5 %), seitenrichtig ausgewertet.
+    pub take_profit_pct: Option<f64>,
 }
 
 impl Default for OrderIntent {
@@ -27,6 +31,8 @@ impl Default for OrderIntent {
             stop_loss: None,
             take_profit: None,
             trailing_pct: None,
+            stop_loss_pct: None,
+            take_profit_pct: None,
         }
     }
 }
@@ -39,6 +45,8 @@ impl OrderIntent {
             stop_loss: None,
             take_profit: None,
             trailing_pct: None,
+            stop_loss_pct: None,
+            take_profit_pct: None,
         }
     }
 

@@ -155,6 +155,35 @@ mod tests {
     }
 
     #[test]
+    fn test_stop_loss_pct_sets_relative_stop_on_intent() {
+        // Arrange
+        let script = "buy(); stop_loss_pct(0.03)";
+        let candles = helper_candles(&[110.0]);
+        let mut state = EvaluatorState::new(110.0);
+
+        // Act
+        let intent = compile_and_run_extended(script, &candles, &mut state);
+
+        // Assert
+        let order = intent.expect("extended evaluation should succeed");
+        assert_eq!(order.stop_loss_pct, Some(0.03));
+        assert_eq!(order.stop_loss, None);
+    }
+
+    #[test]
+    fn test_take_profit_pct_rejects_values_outside_zero_one() {
+        // Arrange
+        let script = "buy(); take_profit_pct(1.5)";
+        let candles = helper_candles(&[110.0]);
+        let mut state = EvaluatorState::new(110.0);
+
+        // Act
+        let result = compile_and_run_extended(script, &candles, &mut state);
+
+        // Assert
+        assert!(result.is_err());
+    }
+    #[test]
     fn test_compile_and_run_extended_with_stop_loss() {
         // Arrange
         let script = "buy(); stop_loss(100.0); take_profit(120.0)";

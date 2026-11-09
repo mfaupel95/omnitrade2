@@ -14,6 +14,19 @@ use crate::extra;
 mod evaluator_args;
 use crate::order_intent::{EvaluatorState, OrderIntent};
 
+/// Prozentwerte fuer Stop/Take-Profit muessen zwischen 0 und 1 liegen (exklusiv).
+fn check_pct(name: &str, pct: f64) -> Result<(), ScriptError> {
+    if pct.is_finite() && pct > 0.0 && pct < 1.0 {
+        Ok(())
+    } else {
+        Err(ScriptError::EvalError {
+            message: format!(
+                "{name} muss zwischen 0 und 1 liegen (z. B. 0.03 fuer 3 %), ist {pct}"
+            ),
+        })
+    }
+}
+
 fn short(name: &str, candles: &[Candle]) -> ScriptError {
     ScriptError::InsufficientHistory {
         message: format!("insufficient candles ({}) for {name}", candles.len()),
@@ -167,6 +180,18 @@ impl Evaluator {
             Stmt::TakeProfit(expr) => {
                 let price = self.eval_expr(expr, candles)?;
                 self.current_intent.take_profit = Some(price);
+                Ok(None)
+            }
+            Stmt::StopLossPct(expr) => {
+                let pct = self.eval_expr(expr, candles)?;
+                check_pct("stop_loss_pct", pct)?;
+                self.current_intent.stop_loss_pct = Some(pct);
+                Ok(None)
+            }
+            Stmt::TakeProfitPct(expr) => {
+                let pct = self.eval_expr(expr, candles)?;
+                check_pct("take_profit_pct", pct)?;
+                self.current_intent.take_profit_pct = Some(pct);
                 Ok(None)
             }
             Stmt::TrailingStop(expr) => {
