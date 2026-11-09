@@ -9,8 +9,8 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use std::time::Duration;
 
-use omnitrade_core::{Order, OrderStatus, OrderType, Side, TimeInForce};
 use crate::trading::FillDetails;
+use omnitrade_core::{Order, OrderStatus, OrderType, Side, TimeInForce};
 use reqwest::Method;
 use serde_json::{json, Value};
 

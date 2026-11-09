@@ -288,7 +288,9 @@ impl StatusWriter {
         }
 
         if f.fee != 0.0 {
-            *s.fees_net_by_currency.entry(f.fee_ccy.clone()).or_insert(0.0) += f.fee;
+            *s.fees_net_by_currency
+                .entry(f.fee_ccy.clone())
+                .or_insert(0.0) += f.fee;
             if quote.as_deref() == Some(f.fee_ccy.as_str()) {
                 s.fee_quote_net += f.fee;
             } else if base.as_deref() == Some(f.fee_ccy.as_str()) {
@@ -306,7 +308,8 @@ impl StatusWriter {
             } else {
                 (ref_price - f.avg_price) * f.filled
             };
-            s.slippage_bps_weighted_sum += adverse_quote / (ref_price * f.filled) * 10_000.0 * notional;
+            s.slippage_bps_weighted_sum +=
+                adverse_quote / (ref_price * f.filled) * 10_000.0 * notional;
             s.slippage_weight += notional;
             s.slippage_quote_total += adverse_quote;
         } else {
@@ -423,16 +426,35 @@ mod tests {
     }
 
     fn fill(filled: f64, avg: f64, fee: f64, ccy: &str) -> FillDetails {
-        FillDetails { filled, avg_price: avg, fee, fee_ccy: ccy.to_string() }
+        FillDetails {
+            filled,
+            avg_price: avg,
+            fee,
+            fee_ccy: ccy.to_string(),
+        }
     }
 
     #[test]
     fn test_fills_book_quote_fees_and_slippage() {
         let mut w = StatusWriter::new(None, "okx", "BTC-USDC", "testnet", "s.omni", 1000.0);
         // Kauf 1 BTC, Fill 101 bei Referenz 100, Gebuehr in USDC.
-        w.record_order_fill("buy", 1.0, 100.0, "placed", "", Some(&fill(1.0, 101.0, -0.001, "USDC")));
+        w.record_order_fill(
+            "buy",
+            1.0,
+            100.0,
+            "placed",
+            "",
+            Some(&fill(1.0, 101.0, -0.001, "USDC")),
+        );
         // Verkauf 0,5 BTC, Fill 99 bei Referenz 100, Gebuehr in der Basis BTC.
-        w.record_order_fill("sell", 0.5, 100.0, "placed", "", Some(&fill(0.5, 99.0, -0.0005, "BTC")));
+        w.record_order_fill(
+            "sell",
+            0.5,
+            100.0,
+            "placed",
+            "",
+            Some(&fill(0.5, 99.0, -0.0005, "BTC")),
+        );
         let s = w.status();
         assert!((s.filled_buy_quote - 101.0).abs() < 1e-9);
         assert!((s.filled_sell_quote - 49.5).abs() < 1e-9);
@@ -474,7 +496,14 @@ mod tests {
     #[test]
     fn test_unknown_fee_currency_is_incomplete() {
         let mut w = StatusWriter::new(None, "okx", "BTC-USDC", "testnet", "s.omni", 1000.0);
-        w.record_order_fill("buy", 1.0, 100.0, "placed", "", Some(&fill(1.0, 100.0, -0.1, "OKB")));
+        w.record_order_fill(
+            "buy",
+            1.0,
+            100.0,
+            "placed",
+            "",
+            Some(&fill(1.0, 100.0, -0.1, "OKB")),
+        );
         let s = w.status();
         assert!(!s.fee_quote_complete);
         assert_eq!(s.fee_quote_net, 0.0);
