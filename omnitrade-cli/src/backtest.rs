@@ -27,10 +27,16 @@ pub struct BacktestConfig {
     pub symbol: String,
     /// Order sizing quantity (defaults to 1.0).
     pub quantity: f64,
+    /// Erlaubt Kurzpositionen: ein `sell()` bei flacher Position eroeffnet einen
+    /// Short. Standard ist aus (long-only), wie der Live-Lauf ohne `--allow-shorts`.
+    pub allow_shorts: bool,
 }
 
 impl BacktestConfig {
     /// Constructs a new `BacktestConfig` with default symbol and quantity.
+    ///
+    /// Kurzpositionen sind nur mit gesetzter Umgebungsvariable `OMNI_ALLOW_SHORTS`
+    /// aktiv; ohne sie bleibt der Lauf long-only (Live-Standard).
     pub fn new(
         script_path: PathBuf,
         data_path: PathBuf,
@@ -47,6 +53,7 @@ impl BacktestConfig {
             slippage_bps,
             symbol: "BTCUSDT".to_string(),
             quantity,
+            allow_shorts: std::env::var("OMNI_ALLOW_SHORTS").is_ok(),
         }
     }
 }
@@ -335,9 +342,10 @@ fn run_backtest_with_script_and_candles(
     let (mut order_id, mut total_trades, mut wins) = (1u64, 0usize, 0usize);
     let (mut peak_equity, mut max_dd) = (cfg.initial_balance, 0.0f64);
     let mut eval = Evaluator::new();
-    // OMNI_LONG_ONLY=1: wie der Live-Lauf (Spot) - sell() schliesst nur die
-    // Long-Position, eroeffnet aber keine Short-Gegenposition.
-    let long_only = std::env::var("OMNI_LONG_ONLY").is_ok();
+    // Standard long-only, wie der Live-Lauf ohne --allow-shorts: sell() schliesst
+    // nur die Long-Position, eroeffnet aber keine Short-Gegenposition. Shorts nur
+    // mit cfg.allow_shorts (Umgebungsvariable OMNI_ALLOW_SHORTS).
+    let long_only = !cfg.allow_shorts;
     let sym = if cfg.symbol.is_empty() {
         "BTCUSDT"
     } else {

@@ -59,6 +59,7 @@ fn test_indicator_warmup_skips_early_candles() {
         slippage_bps: 5.0,
         symbol: "BTCUSDT".to_string(),
         quantity: 1.0,
+        allow_shorts: false,
     };
     let script = "if ema(20) > ema(50) && rsi(14) < 30 { buy() }
         if ema(20) < ema(50) && rsi(14) > 70 { sell() }
@@ -147,7 +148,7 @@ fn test_stop_loss_hits_and_closes_short_at_stop_price() {
         Candle::new(1000, 100.0, 101.0, 99.0, 100.0, 500.0),
         Candle::new(2000, 104.0, 106.0, 103.0, 97.0, 600.0),
     ];
-    let cfg = BacktestConfig::new(
+    let mut cfg = BacktestConfig::new(
         PathBuf::from("dummy.omni"),
         PathBuf::from("dummy.csv"),
         200_000.0,
@@ -155,6 +156,7 @@ fn test_stop_loss_hits_and_closes_short_at_stop_price() {
         0.0,
         1.0,
     );
+    cfg.allow_shorts = true;
     let script = "stop_loss(105.0); if close() > 99.5 { sell() }
 ";
     let result = run_backtest_with_script_and_candles(script, &candles, &cfg)
@@ -208,6 +210,7 @@ fn test_close_realizes_pnl_without_phantom_leg() {
         slippage_bps: 0.0,
         symbol: "BTCUSDT".to_string(),
         quantity: 1.0,
+        allow_shorts: false,
     };
     // Long only: buy below 105, never sell (final close at last candle).
     let script = "if close() < 105 { buy() }
@@ -219,6 +222,40 @@ fn test_close_realizes_pnl_without_phantom_leg() {
     let expected = (111.0 - 100.0) - (111.0 + 100.0) * 0.001;
     assert!((result.total_pnl - expected).abs() < 1e-6);
     assert!((result.final_balance - (cfg.initial_balance + expected)).abs() < 1e-6);
+}
+
+#[test]
+fn test_backtest_sell_on_flat_opens_short_only_when_allowed() {
+    // Arrange: steigende Kurse, sell() ab Close 105 bei flacher Position.
+    let candles: Vec<Candle> = (0..10)
+        .map(|i| {
+            let price = 100.0 + i as f64;
+            Candle::new(i * 1000, price, price + 1.0, price - 1.0, price, 100.0)
+        })
+        .collect();
+    let script = "if close() > 105 { sell() }
+";
+    let mut cfg = BacktestConfig {
+        script_path: PathBuf::from("unused"),
+        data_path: PathBuf::from("unused"),
+        initial_balance: 200_000.0,
+        fee_rate: 0.0,
+        slippage_bps: 0.0,
+        symbol: "BTCUSDT".to_string(),
+        quantity: 1.0,
+        allow_shorts: false,
+    };
+
+    // Act + Assert: Standard (long-only) eroeffnet keinen Short.
+    let long_only = run_backtest_with_script_and_candles(script, &candles, &cfg)
+        .expect("backtest must complete");
+    assert_eq!(long_only.total_trades, 0);
+
+    // Mit allow_shorts wird der Short eroeffnet und am Ende geschlossen.
+    cfg.allow_shorts = true;
+    let with_shorts = run_backtest_with_script_and_candles(script, &candles, &cfg)
+        .expect("backtest must complete");
+    assert_eq!(with_shorts.total_trades, 1);
 }
 
 #[test]
@@ -250,7 +287,7 @@ fn test_backtest_always_sell_script_rising_prices_negative_pnl() {
     // Arrange
     let script = "if close() > 0 { sell() }";
     let candles = helper_rising_candles();
-    let config = BacktestConfig::new(
+    let mut config = BacktestConfig::new(
         PathBuf::from("dummy.omni"),
         PathBuf::from("dummy.csv"),
         10000.0,
@@ -258,6 +295,7 @@ fn test_backtest_always_sell_script_rising_prices_negative_pnl() {
         5.0,
         1.0,
     );
+    config.allow_shorts = true;
 
     // Act
     let result = run_backtest_with_script_and_candles(script, &candles, &config)
@@ -280,7 +318,7 @@ fn test_win_rate_computed_as_wins_divided_by_total_trades() {
         Candle::new(4000, 100.0, 105.0, 95.0, 100.0, 100.0),
         Candle::new(5000, 110.0, 115.0, 105.0, 110.0, 100.0),
     ];
-    let config = BacktestConfig::new(
+    let mut config = BacktestConfig::new(
         PathBuf::from("dummy.omni"),
         PathBuf::from("dummy.csv"),
         10000.0,
@@ -288,6 +326,7 @@ fn test_win_rate_computed_as_wins_divided_by_total_trades() {
         0.0,
         1.0,
     );
+    config.allow_shorts = true;
 
     // Act
     let result = run_backtest_with_script_and_candles(script, &candles, &config)

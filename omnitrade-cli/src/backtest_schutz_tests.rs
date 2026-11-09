@@ -1,14 +1,17 @@
 use super::*;
 
 fn cfg(slippage_bps: f64, fee_rate: f64) -> BacktestConfig {
-    BacktestConfig::new(
+    // Die Schutz-Tests decken beide Seiten ab, also sind Shorts erlaubt.
+    let mut config = BacktestConfig::new(
         PathBuf::from("dummy.omni"),
         PathBuf::from("dummy.csv"),
         1000.0,
         fee_rate,
         slippage_bps,
         1.0,
-    )
+    );
+    config.allow_shorts = true;
+    config
 }
 
 #[test]
