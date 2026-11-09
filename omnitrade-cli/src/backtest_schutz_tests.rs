@@ -121,3 +121,29 @@ fn short_take_profit_pct_exits_below_entry() {
     assert_eq!(result.total_trades, 1);
     assert!((result.total_pnl - expected).abs() < 1e-6);
 }
+
+// Absolute Kurse auf der falschen Seite des Einstiegs brechen den Backtest ab.
+#[test]
+fn unconditional_stop_on_both_sides_is_rejected_for_long_entry() {
+    // Ein Stop-Level fuer beide Seiten (unbedingt gesetzt) liegt fuer den Long-Einstieg ueber dem Kurs.
+    let candles = vec![
+        Candle::new(1000, 100.0, 100.0, 100.0, 100.0, 500.0),
+        Candle::new(2000, 100.0, 100.0, 100.0, 100.0, 600.0),
+    ];
+    let script = "stop_loss(110.0); if close() == 100.0 { buy() }\n";
+    let result = run_backtest_with_script_and_candles(script, &candles, &cfg(0.0, 0.001));
+    assert!(result.is_err());
+}
+
+#[test]
+fn absolute_short_stop_above_entry_runs() {
+    // Short bei 100, Stop bei 103 liegt ueber dem Einstieg: gueltig, Ausfuehrung am Stop.
+    let candles = vec![
+        Candle::new(1000, 100.0, 100.0, 100.0, 100.0, 500.0),
+        Candle::new(2000, 100.0, 110.0, 100.0, 105.0, 600.0),
+    ];
+    let script = "if close() == 100.0 { stop_loss(103.0); sell() }\n";
+    let result = run_backtest_with_script_and_candles(script, &candles, &cfg(0.0, 0.001))
+        .expect("backtest must complete");
+    assert_eq!(result.total_trades, 1);
+}

@@ -176,7 +176,13 @@ fn entry_price(acc: &AccountState, sym: &str, side: Side, c: &Candle) -> f64 {
 /// Trailing-Prozent und das Hoch fuer den Trailing-Stop. Der Trailing-Stop ist
 /// ab der Eroeffnung scharf (`pct` unter dem Einstieg), nicht erst nach einem
 /// hoeheren Hoch.
-fn long_levels(intent: &OrderIntent, entry: f64) -> (Option<f64>, Option<f64>, Option<f64>, f64) {
+/// Stop-, Take-Profit-, Trailing-Level und Einstiegskurs einer Position.
+type Levels = (Option<f64>, Option<f64>, Option<f64>, f64);
+
+/// Absolute Kurse sind seitenabhaengig: Long braucht Stop unter und Take-Profit
+/// ueber dem Einstieg. Liegt ein Kurs auf der falschen Seite, bricht der Backtest
+/// ab, statt den Auftrag sofort oder mit falschem Ergebnis auszufuehren.
+fn long_levels(intent: &OrderIntent, entry: f64) -> Result<Levels, Box<dyn Error>> {
     // Prozentwerte schlagen absolute Kurse auf derselben Seite. Long: Stop unter, TP ueber dem Einstieg.
     let mut stop = match intent.stop_loss_pct {
         Some(p) => Some(entry * (1.0 - p)),
@@ -190,12 +196,29 @@ fn long_levels(intent: &OrderIntent, entry: f64) -> (Option<f64>, Option<f64>, O
         Some(p) => Some(entry * (1.0 + p)),
         None => intent.take_profit,
     };
-    (stop, take, intent.trailing_pct, entry)
+    if let Some(sl) = intent.stop_loss {
+        if intent.stop_loss_pct.is_none() && sl >= entry {
+            return Err(format!(
+                "stop_loss({sl:.4}) liegt bei Long-Einstieg {entry:.4} nicht unter dem Einstieg - stop_loss_pct oder einen Kurs unter dem Einstieg verwenden"
+            )
+            .into());
+        }
+    }
+    if let Some(tp) = intent.take_profit {
+        if intent.take_profit_pct.is_none() && tp <= entry {
+            return Err(format!(
+                "take_profit({tp:.4}) liegt bei Long-Einstieg {entry:.4} nicht ueber dem Einstieg - take_profit_pct oder einen Kurs ueber dem Einstieg verwenden"
+            )
+            .into());
+        }
+    }
+    Ok((stop, take, intent.trailing_pct, entry))
 }
 
 /// Spiegelbild von `long_levels` fuer Shorts: Trailing-Stop `pct` ueber dem Einstieg.
-fn short_levels(intent: &OrderIntent, entry: f64) -> (Option<f64>, Option<f64>, Option<f64>, f64) {
-    // Spiegelbild fuer Shorts: Stop ueber, TP unter dem Einstieg.
+/// Spiegelbild von `long_levels` fuer Shorts: Stop ueber, Take-Profit unter dem Einstieg.
+fn short_levels(intent: &OrderIntent, entry: f64) -> Result<Levels, Box<dyn Error>> {
+    // Stop ueber dem Einstieg (Verlustseite), Take-Profit unter dem Einstieg (Gewinnseite).
     let mut stop = match intent.stop_loss_pct {
         Some(p) => Some(entry * (1.0 + p)),
         None => intent.stop_loss,
@@ -208,7 +231,23 @@ fn short_levels(intent: &OrderIntent, entry: f64) -> (Option<f64>, Option<f64>, 
         Some(p) => Some(entry * (1.0 - p)),
         None => intent.take_profit,
     };
-    (stop, take, intent.trailing_pct, entry)
+    if let Some(sl) = intent.stop_loss {
+        if intent.stop_loss_pct.is_none() && sl <= entry {
+            return Err(format!(
+                "stop_loss({sl:.4}) liegt bei Short-Einstieg {entry:.4} nicht ueber dem Einstieg - stop_loss_pct oder einen Kurs ueber dem Einstieg verwenden"
+            )
+            .into());
+        }
+    }
+    if let Some(tp) = intent.take_profit {
+        if intent.take_profit_pct.is_none() && tp >= entry {
+            return Err(format!(
+                "take_profit({tp:.4}) liegt bei Short-Einstieg {entry:.4} nicht unter dem Einstieg - take_profit_pct oder einen Kurs unter dem Einstieg verwenden"
+            )
+            .into());
+        }
+    }
+    Ok((stop, take, intent.trailing_pct, entry))
 }
 
 /// Ausloesung eines Long-Schutzes auf einer Kerze. Liefert Kurs, Art und ob der
@@ -410,7 +449,7 @@ fn run_backtest_with_script_and_candles(
                     order_id += 1;
                     let entry = entry_price(&acc, sym, Side::Buy, c);
                     (long_stop, long_take, long_trail, long_trail_hi) =
-                        long_levels(eval.current_intent(), entry);
+                        long_levels(eval.current_intent(), entry)?;
                 }
             }
             Signal::Sell if has_long => {
@@ -428,7 +467,7 @@ fn run_backtest_with_script_and_candles(
                     order_id += 1;
                     let entry = entry_price(&acc, sym, Side::Sell, c);
                     (short_stop, short_take, short_trail, short_trail_lo) =
-                        short_levels(eval.current_intent(), entry);
+                        short_levels(eval.current_intent(), entry)?;
                 }
             }
             Signal::Buy if !has_long => {
@@ -436,14 +475,14 @@ fn run_backtest_with_script_and_candles(
                 order_id += 1;
                 let entry = entry_price(&acc, sym, Side::Buy, c);
                 (long_stop, long_take, long_trail, long_trail_hi) =
-                    long_levels(eval.current_intent(), entry);
+                    long_levels(eval.current_intent(), entry)?;
             }
             Signal::Sell if !has_short && !long_only => {
                 execute_order(&mut acc, &mut eng, order_id, sym, Side::Sell, qty, c)?;
                 order_id += 1;
                 let entry = entry_price(&acc, sym, Side::Sell, c);
                 (short_stop, short_take, short_trail, short_trail_lo) =
-                    short_levels(eval.current_intent(), entry);
+                    short_levels(eval.current_intent(), entry)?;
             }
             _ => {}
         }
