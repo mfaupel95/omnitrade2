@@ -1,0 +1,20 @@
+EXPECTED_EXIT=101
+ACTUAL_EXIT=101
+
+running 1 test
+test live_loop::offline_execution::replay::offline_hype_real_loop ... FAILED
+
+failures:
+
+failures:
+    live_loop::offline_execution::replay::offline_hype_real_loop
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 113 filtered out; finished in 36.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.76s
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_cli-05778cbfbe952fe7.exe)
+
+thread 'live_loop::offline_execution::replay::offline_hype_real_loop' (16500) panicked at omnitrade-cli\src\live_loop\offline_execution\replay.rs:138:40:
+atomic no-clobber export (same volume required): Os { code: 183, kind: AlreadyExists, message: "Eine Datei kann nicht erstellt werden, wenn sie bereits vorhanden ist." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p omnitrade-cli --bin omnitrade-cli`

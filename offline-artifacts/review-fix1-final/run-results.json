@@ -1,0 +1,43 @@
+{
+  "gates": [
+    {
+      "name": "cli-tests",
+      "exit": 0
+    },
+    {
+      "name": "verify",
+      "exit": 0
+    },
+    {
+      "name": "verify-optimized",
+      "exit": 0
+    },
+    {
+      "name": "mutations",
+      "exit": 0
+    },
+    {
+      "name": "mutations-optimized",
+      "exit": 0
+    },
+    {
+      "name": "workspace-tests",
+      "exit": 0
+    },
+    {
+      "name": "workspace-clippy",
+      "exit": 0
+    }
+  ],
+  "original_inventory_unchanged": true,
+  "original_sha256": {
+    "offline-artifacts\\hype-replay.json": "c00712d2dd3392acb7319e9689ce79d4c6120457880633d4b34e3ed52f92926a",
+    "offline-artifacts\\comparison.json": "36615d08c24a46209234c9832c51220c4f336afd7732c535a23a97337568df73",
+    "offline-artifacts\\fixture\\candles.csv": "12bc1dcec41b6bf4da89060fe342e2e5efc027f569d95ab067720a1405d4389b",
+    "offline-artifacts\\fixture\\hashes.json": "72cd61432ad2555c44ff682afb546b2f9fd2f9d5459132262b70a305054b435a",
+    "offline-artifacts\\fixture\\manifest.json": "3d4e15674c82c26e92413184de6dac840662847a7c8793f7301ba1f1ccbc28b2",
+    "offline-artifacts\\fixture\\momentum_ema_rsi.omni": "8bc24a32b88426037c680e64392c5e171412732ac79be92efa1302c5ee76c9b4",
+    "offline-artifacts\\fixture\\reconstruction.json": "969353fc3fc40ae08e40f47fe543b71921e2f4218ca5fa410fcffede0dfa856d",
+    "offline-artifacts\\fixture\\signals.stdout.txt": "73c43c006caaae76dddc0aed6d80ed23a4e95475808428eddcd493f03887663a"
+  }
+}

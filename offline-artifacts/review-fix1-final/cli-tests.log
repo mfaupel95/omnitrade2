@@ -1,0 +1,128 @@
+COMMAND=cargo test --offline --target-dir target-offline -p omnitrade-cli -- --nocapture
+EXIT=0
+
+running 114 tests
+test backtest::tests::test_close_realizes_pnl_without_phantom_leg ... ok
+test backtest::tests::test_backtest_always_sell_script_rising_prices_negative_pnl ... ok
+test backtest::tests::test_quantity_scales_pnl_linearly ... ok
+test backtest::tests::test_backtest_always_buy_script_rising_prices_positive_pnl ... ok
+test backtest::tests::test_drawdown_zaehlt_den_positionswert_mit ... ok
+test backtest::tests::test_csv_5_rows_parses_into_5_candle_structs ... ok
+test args::tests::test_parse_kill_command ... ok
+test args::tests::test_parse_backtest_default_values ... ok
+test args::tests::test_parse_validate_command ... ok
+test args::tests::test_parse_backtest_all_flags ... ok
+test backtest::tests::test_malformed_csv_row_returns_error ... ok
+test args::tests::test_parse_live_command_all_flags ... ok
+test args::tests::test_parse_kill_reset_flag ... ok
+test args::tests::test_parse_live_command_mainnet_flags ... ok
+test backtest::tests::test_indicator_warmup_skips_early_candles ... ok
+test args::tests::test_missing_required_argument_returns_error ... ok
+test args::tests::test_parse_live_command_with_grid_config ... ok
+test args::tests::test_parse_live_command_exchange_flag ... ok
+test backtest::tests::test_stop_loss_hits_and_closes_long_at_stop_price ... ok
+test backtest::tests::test_trailing_stop_ratchets_up_and_closes_long ... ok
+test args::tests::test_parse_live_command_with_script ... ok
+test backtest::tests::test_stop_loss_hits_and_closes_short_at_stop_price ... ok
+test args::tests::parses_allow_shorts_flag ... ok
+test commands::live::tests::leverage_is_bounded_to_one_through_ten ... ok
+test backtest::tests::test_take_profit_hits_and_closes_long_at_tp_price ... ok
+test commands::live::tests::kraken_trading_is_refused_with_reason ... ok
+test commands::live::tests::grid_is_binance_only ... ok
+test backtest::tests::test_win_rate_computed_as_wins_divided_by_total_trades ... ok
+test commands::live::tests::mainnet_grid_stays_blocked ... ok
+test commands::kill::tests::kill_sets_and_reset_clears_flag ... ok
+test commands::live::tests::mainnet_is_okx_only ... ok
+test commands::live::tests::mainnet_needs_a_cap_within_the_hard_limit ... ok
+test commands::live::tests::mainnet_perp_stays_blocked_even_with_all_approvals ... ok
+test commands::live::tests::mainnet_requires_explicit_real_money_confirmation ... ok
+test commands::live::tests::mainnet_still_needs_the_environment_approval ... ok
+test commands::live::tests::non_positive_testnet_cap_is_rejected ... ok
+test commands::live::tests::swap_symbols_are_detected_case_insensitively ... ok
+test grid_loop::tests::counter_level_rounds_price_and_floors_quantity ... ok
+test commands::live::tests::unknown_exchange_is_rejected ... ok
+test grid_loop::tests::leverage_other_than_one_is_rejected ... ok
+test kill_switch::tests::clear_without_flag_is_ok ... ok
+test commands::live::tests::okx_without_credentials_fails_before_any_connection ... ok
+test live_loop::offline_execution::offline_actual_partial_fill_and_error_evidence ... ok
+test live_loop::offline_execution::offline_cap_rejects_and_opposite_signal_reduces_one_step ... ok
+test live_loop::offline_execution::offline_reduction_still_above_cap_is_rejected ... ok
+test live_loop::offline_execution::offline_short_profit_loss_and_cross_zero_book ... ok
+test live_loop::offline_execution::offline_stateful_fill_accumulates_one_step ... ok
+test live_loop::offline_execution::offline_unknown_order_type_fails_closed ... ok
+test live_loop::risk_tests::adopt_existing_counts_startbestand_als_laufposition ... ok
+test live_loop::risk_tests::equity_nimmt_die_abrechnungswaehrung_wenn_die_quote_fehlt ... ok
+test live_loop::risk_tests::exposure_cap_allows_flipping_own_long_into_short_when_enabled ... ok
+test live_loop::risk_tests::bought_coins_do_not_look_like_a_drawdown_to_the_risk_guard ... ok
+test live_loop::risk_tests::exposure_cap_allows_shorts_when_enabled ... ok
+test live_loop::risk_tests::exposure_cap_ignores_preexisting_holdings_and_never_sells_them ... ok
+test live_loop::risk_tests::exposure_cap_limits_what_the_run_builds_up ... ok
+test live_loop::risk_tests::exposure_cap_rejects_shorts_by_default ... ok
+test live_loop::risk_tests::exposure_cap_sell_tolerates_fee_shortfall ... ok
+test live_loop::risk_tests::flat_position_passes_liquidation_check ... ok
+test kill_switch::tests::engage_sets_flag_and_clear_removes_it ... ok
+test live_loop::risk_tests::healthy_distance_allows_growing_position ... ok
+test live_loop::risk_tests::long_only_allows_sell_of_the_run_position ... ok
+test live_loop::risk_tests::long_only_never_sells_pre_existing_stock ... ok
+test live_loop::risk_tests::liquidation_beim_preis_null_sperrt_das_nachlegen_nicht ... ok
+test live_loop::risk_tests::invalid_price_or_symbol_is_rejected_fail_closed ... ok
+test live_loop::risk_tests::long_only_rejects_sell_without_position ... ok
+test live_loop::risk_tests::loss_limit_uses_equity_at_run_start_not_declared_capital ... ok
+test live_loop::risk_tests::mainnet_cap_validation ... ok
+test live_loop::risk_tests::open_position_without_liquidation_price_fails_closed ... ok
+test live_loop::risk_tests::opening_or_growing_near_liquidation_is_rejected ... ok
+test live_loop::risk_tests::pair_equity_values_base_holdings_at_price ... ok
+test live_loop::risk_tests::perpetual_drawdown_ignores_foreign_account_movements ... ok
+test live_loop::risk_tests::perpetual_exposure_uses_position_not_spot_balance ... ok
+test live_loop::risk_tests::perpetual_drawdown_still_blocks_own_unrealized_loss ... ok
+test live_loop::risk_tests::split_symbol_handles_all_exchange_notations ... ok
+test live_loop::risk_tests::reducing_near_liquidation_stays_allowed ... ok
+test live_loop::risk_tests::real_loss_is_still_blocked_after_valuing_holdings ... ok
+test live_loop::risk_tests::split_symbol_handles_xperp_and_dated_futures ... ok
+test live_loop::risk_tests::mainnet_with_cap_above_hard_limit_is_rejected_before_any_exchange_call ... ok
+test live_loop::risk_tests::split_symbol_accepts_perpetual_suffix ... ok
+test live_loop::risk_tests::split_symbol_rejects_unsplittable_input ... ok
+test live_loop::risk_tests::unrealized_loss_reduces_equity_for_perpetuals ... ok
+test live_loop::risk_tests::non_positive_cap_is_rejected_even_on_testnet ... ok
+test live_loop::tests::intervall_sekunden_kennt_die_hausintervalle ... ok
+test live_loop::tests::kanal_gilt_nach_drei_intervallen_als_still ... ok
+test live_loop::tests::puffer_aus_rest_deckelt_auf_die_puffergroesse ... ok
+test live_loop::tests::puffer_aus_rest_ergaenzt_und_entdoppelt ... ok
+test live_loop::tests::puffer_aus_rest_ohne_rest_kerzen_behaelt_den_bestand ... ok
+test live_loop::tests::test_live_loop_error_display ... ok
+test status::tests::test_error_sets_state ... ok
+test status::tests::test_recent_orders_are_capped ... ok
+test status::tests::test_recent_candles_are_capped ... ok
+test status::tests::test_rejections_count_separately_and_keep_position ... ok
+test status::tests::test_without_path_flush_is_noop ... ok
+test live_loop::risk_tests::testnet_cap_allows_orders_within_the_cap ... ok
+test live_loop::risk_tests::mainnet_with_valid_cap_runs_and_blocks_orders_over_the_cap ... ok
+test live_loop::tests::mainnet_is_rejected_before_any_exchange_call ... ok
+test live_loop::tests::buy_signal_places_market_order_with_configured_quantity ... ok
+test live_loop::tests::missing_script_file_returns_script_file_error ... ok
+test live_loop::tests::non_positive_quantity_is_rejected ... ok
+test live_loop::tests::engaged_kill_switch_blocks_orders_cancels_open_orders_and_disconnects ... ok
+test live_loop::tests::hold_signal_places_no_order ... ok
+test live_loop::tests::without_kill_switch_nothing_is_cancelled ... ok
+test live_loop::tests::oversized_order_is_rejected_by_risk_guard_and_loop_continues ... ok
+test live_loop::tests::balance_failure_blocks_order_fail_closed ... ok
+test live_loop::tests::sell_signal_opens_short_only_when_allow_shorts ... ok
+test status::tests::test_flush_writes_readable_json ... ok
+test live_loop::tests::subscribes_before_connect_and_disconnects_at_end ... ok
+test live_loop::tests::buch_uebernimmt_die_boersenposition_ohne_eigenen_auftrag ... ok
+test live_loop::tests::xperp_auftrag_wird_nicht_am_erfundenen_drawdown_abgelehnt ... ok
+test grid_loop::tests::places_buy_ladder_and_cancels_on_kill ... ok
+test grid_loop::tests::externally_cancelled_level_is_dropped_without_counter_order ... ok
+test grid_loop::tests::rejected_counter_order_leaves_gap_but_grid_keeps_running ... ok
+test grid_loop::tests::filled_buy_becomes_sell_one_level_up_and_filled_sell_becomes_buy ... ok
+OFFLINE_REPLAY=C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\cache\scratch\offline-hype-51752-1794346029556623700\hype-replay.json
+test live_loop::offline_execution::replay::offline_hype_real_loop ... ok
+
+test result: ok. 114 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.15s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.28s
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_cli-05778cbfbe952fe7.exe)
+Not-Aus gesetzt (C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\cache\scratch\omnitrade-kill-cmd-51752)
+Laufender Live-Handel stoppt und storniert offene Orders.
+Bestände werden nicht verkauft. Aufheben mit: omnitrade-cli kill --reset
+Not-Aus aufgehoben (C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\cache\scratch\omnitrade-kill-cmd-51752)

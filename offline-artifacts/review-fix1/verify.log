@@ -1,0 +1,17 @@
+COMMAND=C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\installs\bf59c98340a908a8\environments\d99231ad794848128bcf0240877fa13c\venv\Scripts\python.exe offline-artifacts/verify.py C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\review-fix1\hype-replay.json --export C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\review-fix1\verify-comparison.json
+EXIT=1
+Traceback (most recent call last):
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 159, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 147, in main
+    orders = compare(rows, signals, reference)
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 34, in compare
+    schema(reference, 'accepted rejected position closed_lots gross_realized fees net_realized unrealized equity ledger')
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 17, in schema
+    require(type(value) is dict and set(value) == set(keys.split()), 'unknown/missing schema fields')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 14, in require
+    raise ValueError(message)
+ValueError: unknown/missing schema fields

@@ -1,0 +1,13 @@
+COMMAND=C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\installs\bf59c98340a908a8\environments\d99231ad794848128bcf0240877fa13c\venv\Scripts\python.exe -O offline-artifacts/verify.py C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\review-fix1-final\hype-replay.json --export C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\review-fix1-final\verify-optimized-comparison.json
+EXIT=0
+{
+  "candles": 1440,
+  "orders": 206,
+  "accepted": 107,
+  "rejected": 99,
+  "position": 0.30000000000000004,
+  "equity": 50.00923664999997,
+  "fixture_hashes_verified": 5,
+  "replay_sha256": "88b067a92318634aa551f3c6462b72876af7c6b61af7978622a782ed1ba40b95"
+}
+COMPARISON=C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\cache\scratch\offline-verify-19ioedn1\comparison.json

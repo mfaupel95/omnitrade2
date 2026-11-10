@@ -1,4 +1,6 @@
-# Offline-Papierausfuehrung: gepruefter lokaler Stand
+# Historischer Offline-Stand vor Review — nicht freigegeben
+
+Dieser Bericht beschreibt den Stand b8d1d44 vor den belegten ReviewFindings. Er ist keine aktuelle Freigabe. Fixzyklus und neue Nachweise: [REVIEW_FIX1.md](REVIEW_FIX1.md). Die alten Artefakte bleiben unveraendert.
 
 Der echte Live-Loop laeuft gegen eine zustandsbehaftete FakeExchange. Kein nachgebauter Python-Ausfuehrungskern, kein hinzugefuegter Stop, kein Betriebsneustart.
 

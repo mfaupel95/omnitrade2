@@ -1,0 +1,8 @@
+COMMAND=C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\installs\bf59c98340a908a8\environments\d99231ad794848128bcf0240877fa13c\venv\Scripts\python.exe offline-artifacts/test_verify.py
+EXIT=0
+MUTATIONS_REJECTED=32 per mode; normal and -O
+...
+----------------------------------------------------------------------
+Ran 3 tests in 25.451s
+
+OK

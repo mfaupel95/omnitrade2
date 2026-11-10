@@ -1,0 +1,16 @@
+COMMAND=cargo clippy --offline --target-dir target-offline --workspace -- -D warnings
+EXIT=0
+    Checking tokio v1.54.1
+    Checking tokio-util v0.7.20
+    Checking tokio-native-tls v0.3.1
+    Checking omnitrade-risk v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-risk)
+    Checking tokio-tungstenite v0.26.2
+    Checking omnitrade-engine v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-engine)
+    Checking h2 v0.3.27
+    Checking hyper v0.14.32
+    Checking hyper-tls v0.5.0
+    Checking reqwest v0.11.27
+    Checking omnitrade-exchange v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-exchange)
+    Checking omnitrade-ui v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-ui)
+    Checking omnitrade-cli v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 46.40s

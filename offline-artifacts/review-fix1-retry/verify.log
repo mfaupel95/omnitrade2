@@ -1,0 +1,14 @@
+COMMAND=C:\Users\faupe\Documents\BrainFiles\Agenten\Hermes\installs\bf59c98340a908a8\environments\d99231ad794848128bcf0240877fa13c\venv\Scripts\python.exe offline-artifacts/verify.py C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\review-fix1-retry\hype-replay.json --export C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\review-fix1-retry\verify-comparison.json
+EXIT=1
+Traceback (most recent call last):
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 165, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 153, in main
+    orders = compare(rows, signals, reference)
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 37, in compare
+    require(reference['input_sha256'] == hashlib.sha256((ROOT/'fixture/candles.csv').read_bytes()).hexdigest(), 'reference input hash')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\offline-artifacts\verify.py", line 14, in require
+    raise ValueError(message)
+ValueError: reference input hash

@@ -1,0 +1,639 @@
+COMMAND=cargo test --offline --target-dir target-offline --workspace
+EXIT=0
+
+running 114 tests
+test backtest::tests::test_malformed_csv_row_returns_error ... ok
+test backtest::tests::test_csv_5_rows_parses_into_5_candle_structs ... ok
+test backtest::tests::test_close_realizes_pnl_without_phantom_leg ... ok
+test backtest::tests::test_win_rate_computed_as_wins_divided_by_total_trades ... ok
+test backtest::tests::test_stop_loss_hits_and_closes_short_at_stop_price ... ok
+test backtest::tests::test_backtest_always_sell_script_rising_prices_negative_pnl ... ok
+test backtest::tests::test_drawdown_zaehlt_den_positionswert_mit ... ok
+test backtest::tests::test_trailing_stop_ratchets_up_and_closes_long ... ok
+test backtest::tests::test_quantity_scales_pnl_linearly ... ok
+test backtest::tests::test_take_profit_hits_and_closes_long_at_tp_price ... ok
+test backtest::tests::test_stop_loss_hits_and_closes_long_at_stop_price ... ok
+test backtest::tests::test_indicator_warmup_skips_early_candles ... ok
+test backtest::tests::test_backtest_always_buy_script_rising_prices_positive_pnl ... ok
+test commands::live::tests::leverage_is_bounded_to_one_through_ten ... ok
+test args::tests::test_parse_kill_command ... ok
+test args::tests::test_parse_live_command_mainnet_flags ... ok
+test args::tests::test_parse_kill_reset_flag ... ok
+test args::tests::test_parse_backtest_default_values ... ok
+test args::tests::test_parse_validate_command ... ok
+test args::tests::test_parse_backtest_all_flags ... ok
+test args::tests::test_missing_required_argument_returns_error ... ok
+test args::tests::test_parse_live_command_with_grid_config ... ok
+test args::tests::test_parse_live_command_all_flags ... ok
+test args::tests::test_parse_live_command_exchange_flag ... ok
+test commands::live::tests::mainnet_perp_stays_blocked_even_with_all_approvals ... ok
+test commands::live::tests::grid_is_binance_only ... ok
+test commands::live::tests::mainnet_needs_a_cap_within_the_hard_limit ... ok
+test commands::live::tests::mainnet_grid_stays_blocked ... ok
+test commands::live::tests::kraken_trading_is_refused_with_reason ... ok
+test commands::kill::tests::kill_sets_and_reset_clears_flag ... ok
+test commands::live::tests::mainnet_is_okx_only ... ok
+test commands::live::tests::mainnet_requires_explicit_real_money_confirmation ... ok
+test args::tests::parses_allow_shorts_flag ... ok
+test args::tests::test_parse_live_command_with_script ... ok
+test commands::live::tests::swap_symbols_are_detected_case_insensitively ... ok
+test commands::live::tests::mainnet_still_needs_the_environment_approval ... ok
+test commands::live::tests::non_positive_testnet_cap_is_rejected ... ok
+test commands::live::tests::unknown_exchange_is_rejected ... ok
+test grid_loop::tests::counter_level_rounds_price_and_floors_quantity ... ok
+test grid_loop::tests::leverage_other_than_one_is_rejected ... ok
+test kill_switch::tests::clear_without_flag_is_ok ... ok
+test commands::live::tests::okx_without_credentials_fails_before_any_connection ... ok
+test live_loop::offline_execution::offline_actual_partial_fill_and_error_evidence ... ok
+test live_loop::offline_execution::offline_reduction_still_above_cap_is_rejected ... ok
+test live_loop::offline_execution::offline_cap_rejects_and_opposite_signal_reduces_one_step ... ok
+test live_loop::offline_execution::offline_stateful_fill_accumulates_one_step ... ok
+test live_loop::risk_tests::adopt_existing_counts_startbestand_als_laufposition ... ok
+test live_loop::offline_execution::offline_unknown_order_type_fails_closed ... ok
+test live_loop::offline_execution::offline_short_profit_loss_and_cross_zero_book ... ok
+test live_loop::risk_tests::equity_nimmt_die_abrechnungswaehrung_wenn_die_quote_fehlt ... ok
+test live_loop::risk_tests::exposure_cap_allows_flipping_own_long_into_short_when_enabled ... ok
+test live_loop::risk_tests::bought_coins_do_not_look_like_a_drawdown_to_the_risk_guard ... ok
+test live_loop::risk_tests::exposure_cap_allows_shorts_when_enabled ... ok
+test live_loop::risk_tests::exposure_cap_ignores_preexisting_holdings_and_never_sells_them ... ok
+test live_loop::risk_tests::exposure_cap_limits_what_the_run_builds_up ... ok
+test kill_switch::tests::engage_sets_flag_and_clear_removes_it ... ok
+test live_loop::risk_tests::exposure_cap_rejects_shorts_by_default ... ok
+test live_loop::risk_tests::exposure_cap_sell_tolerates_fee_shortfall ... ok
+test live_loop::risk_tests::healthy_distance_allows_growing_position ... ok
+test live_loop::risk_tests::flat_position_passes_liquidation_check ... ok
+test live_loop::risk_tests::liquidation_beim_preis_null_sperrt_das_nachlegen_nicht ... ok
+test live_loop::risk_tests::invalid_price_or_symbol_is_rejected_fail_closed ... ok
+test live_loop::risk_tests::long_only_allows_sell_of_the_run_position ... ok
+test live_loop::risk_tests::long_only_rejects_sell_without_position ... ok
+test live_loop::risk_tests::long_only_never_sells_pre_existing_stock ... ok
+test live_loop::risk_tests::mainnet_cap_validation ... ok
+test live_loop::risk_tests::open_position_without_liquidation_price_fails_closed ... ok
+test live_loop::risk_tests::loss_limit_uses_equity_at_run_start_not_declared_capital ... ok
+test live_loop::risk_tests::opening_or_growing_near_liquidation_is_rejected ... ok
+test live_loop::risk_tests::perpetual_drawdown_still_blocks_own_unrealized_loss ... ok
+test live_loop::risk_tests::pair_equity_values_base_holdings_at_price ... ok
+test live_loop::risk_tests::perpetual_drawdown_ignores_foreign_account_movements ... ok
+test live_loop::risk_tests::reducing_near_liquidation_stays_allowed ... ok
+test live_loop::risk_tests::real_loss_is_still_blocked_after_valuing_holdings ... ok
+test live_loop::risk_tests::split_symbol_accepts_perpetual_suffix ... ok
+test live_loop::risk_tests::split_symbol_handles_all_exchange_notations ... ok
+test live_loop::risk_tests::mainnet_with_cap_above_hard_limit_is_rejected_before_any_exchange_call ... ok
+test live_loop::risk_tests::split_symbol_rejects_unsplittable_input ... ok
+test live_loop::risk_tests::perpetual_exposure_uses_position_not_spot_balance ... ok
+test live_loop::risk_tests::unrealized_loss_reduces_equity_for_perpetuals ... ok
+test live_loop::risk_tests::split_symbol_handles_xperp_and_dated_futures ... ok
+test live_loop::risk_tests::non_positive_cap_is_rejected_even_on_testnet ... ok
+test live_loop::tests::intervall_sekunden_kennt_die_hausintervalle ... ok
+test live_loop::tests::kanal_gilt_nach_drei_intervallen_als_still ... ok
+test live_loop::tests::puffer_aus_rest_ergaenzt_und_entdoppelt ... ok
+test live_loop::tests::puffer_aus_rest_ohne_rest_kerzen_behaelt_den_bestand ... ok
+test live_loop::tests::puffer_aus_rest_deckelt_auf_die_puffergroesse ... ok
+test live_loop::risk_tests::mainnet_with_valid_cap_runs_and_blocks_orders_over_the_cap ... ok
+test live_loop::tests::test_live_loop_error_display ... ok
+test status::tests::test_error_sets_state ... ok
+test status::tests::test_recent_orders_are_capped ... ok
+test status::tests::test_rejections_count_separately_and_keep_position ... ok
+test status::tests::test_without_path_flush_is_noop ... ok
+test status::tests::test_recent_candles_are_capped ... ok
+test live_loop::risk_tests::testnet_cap_allows_orders_within_the_cap ... ok
+test live_loop::tests::balance_failure_blocks_order_fail_closed ... ok
+test live_loop::tests::buy_signal_places_market_order_with_configured_quantity ... ok
+test live_loop::tests::mainnet_is_rejected_before_any_exchange_call ... ok
+test live_loop::tests::hold_signal_places_no_order ... ok
+test live_loop::tests::missing_script_file_returns_script_file_error ... ok
+test live_loop::tests::non_positive_quantity_is_rejected ... ok
+test live_loop::tests::subscribes_before_connect_and_disconnects_at_end ... ok
+test live_loop::tests::without_kill_switch_nothing_is_cancelled ... ok
+test live_loop::tests::engaged_kill_switch_blocks_orders_cancels_open_orders_and_disconnects ... ok
+test live_loop::tests::oversized_order_is_rejected_by_risk_guard_and_loop_continues ... ok
+test status::tests::test_flush_writes_readable_json ... ok
+test live_loop::tests::sell_signal_opens_short_only_when_allow_shorts ... ok
+test live_loop::tests::xperp_auftrag_wird_nicht_am_erfundenen_drawdown_abgelehnt ... ok
+test live_loop::tests::buch_uebernimmt_die_boersenposition_ohne_eigenen_auftrag ... ok
+test grid_loop::tests::places_buy_ladder_and_cancels_on_kill ... ok
+test grid_loop::tests::externally_cancelled_level_is_dropped_without_counter_order ... ok
+test grid_loop::tests::rejected_counter_order_leaves_gap_but_grid_keeps_running ... ok
+test grid_loop::tests::filled_buy_becomes_sell_one_level_up_and_filled_sell_becomes_buy ... ok
+test live_loop::offline_execution::replay::offline_hype_real_loop ... ok
+
+test result: ok. 114 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.82s
+
+
+running 64 tests
+test indicators::ema::tests::ema_constant_values ... ok
+test indicators::ema::tests::ema_period_1 ... ok
+test indicators::ema::tests::ema_subsequent_values ... ok
+test indicators::ema::tests::ema_known_sequence ... ok
+test indicators::ema::tests::ema_seed_from_sma ... ok
+test indicators::rsi::tests::rsi_bounded_0_to_100 ... ok
+test indicators::ema::tests::ema_value_peek ... ok
+test indicators::ema::tests::ema_zero_period_returns_error ... ok
+test indicators::rsi::tests::rsi_wilder_smoothing ... ok
+test indicators::rsi::tests::rsi_all_gains ... ok
+test indicators::ema::tests::ema_multiplier ... ok
+test indicators::rsi::tests::rsi_default_period ... ok
+test indicators::sma::tests::sma_period_1 ... ok
+test indicators::rsi::tests::rsi_equal_gains_and_losses ... ok
+test indicators::rsi::tests::rsi_flat_market ... ok
+test indicators::rsi::tests::rsi_known_14_period_sequence ... ok
+test indicators::sma::tests::sma_zero_period_returns_error ... ok
+test indicators::volatility::tests::volatility_alternating_values ... ok
+test indicators::ema::tests::ema_reset ... ok
+test indicators::rsi::tests::rsi_zero_period_returns_error ... ok
+test indicators::volatility::tests::volatility_constant_values ... ok
+test indicators::sma::tests::sma_basic ... ok
+test indicators::sma::tests::sma_constant_values ... ok
+test indicators::sma::tests::sma_known_sequence ... ok
+test indicators::sma::tests::sma_numerical_stability ... ok
+test indicators::sma::tests::sma_reset ... ok
+test indicators::rsi::tests::rsi_needs_period_plus_one_prices ... ok
+test indicators::rsi::tests::rsi_reset ... ok
+test indicators::volatility::tests::volatility_long_sequence ... ok
+test indicators::volatility::tests::volatility_basic ... ok
+test indicators::rsi::tests::rsi_all_losses ... ok
+test indicators::sma::tests::sma_value_peek ... ok
+test indicators::volatility::tests::volatility_reset ... ok
+test indicators::rsi::tests::rsi_value_peek ... ok
+test indicators::volatility::tests::volatility_single_value_window_large_price_changes ... ok
+test indicators::volatility::tests::volatility_large_values_stability ... ok
+test indicators::volatility::tests::volatility_sliding_window ... ok
+test indicators::volatility::tests::volatility_mean ... ok
+test indicators::volatility::tests::volatility_value_peek ... ok
+test indicators::volatility::tests::volatility_period_1 ... ok
+test indicators::volatility::tests::volatility_variance ... ok
+test ring_buffer::tests::capacity_1 ... ok
+test indicators::volatility::tests::volatility_zero_period_returns_error ... ok
+test ring_buffer::tests::clear ... ok
+test ring_buffer::tests::debug_trait ... ok
+test ring_buffer::tests::default_trait ... ok
+test ring_buffer::tests::empty_buffer ... ok
+test ring_buffer::tests::iter_empty ... ok
+test ring_buffer::tests::iter_exact_size ... ok
+test ring_buffer::tests::iter_order ... ok
+test ring_buffer::tests::iter_partial_fill ... ok
+test ring_buffer::tests::large_capacity ... ok
+test ring_buffer::tests::multiple_wraps ... ok
+test ring_buffer::tests::push_and_get_below_capacity ... ok
+test ring_buffer::tests::push_at_capacity ... ok
+test ring_buffer::tests::wrap_around ... ok
+test types::tests::candle_properties ... ok
+test types::tests::order_remaining_and_status ... ok
+test types::tests::order_terminal_states ... ok
+test types::tests::position_mark_to_market_long ... ok
+test types::tests::position_mark_to_market_short ... ok
+test types::tests::position_notional_value ... ok
+test types::tests::side_opposite ... ok
+test types::tests::tick_notional ... ok
+
+test result: ok. 64 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 42 tests
+test account::tests::test_buy_closes_short_partially_and_flips_remainder ... ok
+test account::tests::test_equity_bei_short_zieht_den_positionswert_ab ... ok
+test account::tests::test_equity_haelt_den_positionswert ... ok
+test account::tests::test_phase5_sell_offsets_long_and_leaves_short ... ok
+test error::tests::test_invalid_order_size_display ... ok
+test account::tests::test_equity_of_open_short_excludes_sale_proceeds ... ok
+test account::tests::test_sell_closes_long_without_phantom_short ... ok
+test error::tests::test_account_locked_display ... ok
+test error::tests::test_core_error_conversion ... ok
+test fill::tests::test_order_fill_net_notional ... ok
+test fill::tests::test_try_new_validation ... ok
+test matching::tests::buy_trailing_stop_tracks_low_and_triggers_on_rise ... ok
+test error::tests::test_order_not_found_display ... ok
+test account::tests::test_equity_equals_cash_after_flat_round_trip ... ok
+test fees::tests::fee_schedule_invalid_rates_err ... ok
+test fees::tests::slippage_model_creation_and_application ... ok
+test fees::tests::slippage_model_negative_bps_err ... ok
+test matching::tests::stop_loss_triggers_on_candle_low ... ok
+test error::tests::test_insufficient_balance_display ... ok
+test fill::tests::test_order_fill_new_and_notional ... ok
+test matching::tests::buy_side_stop_loss_and_take_profit_mirror_sell_side ... ok
+test account::tests::test_equity_of_open_long_includes_position_value ... ok
+test matching::tests::limit_buy_order_triggers_when_tick_price_less_than_or_equal_to_limit ... ok
+test matching::tests::market_buy_order_filled_at_tick_price_plus_slippage ... ok
+test error::tests::test_symbol_not_found_display ... ok
+test fees::tests::fee_schedule_creation_and_compute_fee ... ok
+test fees::tests::zero_slippage_returns_original_price ... ok
+test matching::tests::zero_quantity_order_rejected ... ok
+test matching::tests::submit_accepts_stop_loss_with_trigger_price_and_zero_stop_price ... ok
+test matching::tests::zero_remaining_quantity_marks_order_filled ... ok
+test matching::tests::submit_rejects_non_positive_or_nan_trigger_price ... ok
+test matching::tests::take_profit_triggers_on_candle_high ... ok
+test orderbook::tests::test_depth_at ... ok
+test matching::tests::trailing_stop_initializes_highest_on_first_candle ... ok
+test matching::tests::trailing_stop_updates_highest_and_triggers ... ok
+test fill::builder::tests::test_order_fill_builder_success ... ok
+test error::tests::test_invalid_field_value_display ... ok
+test orderbook::tests::test_bids_descending_asks_ascending ... ok
+test orderbook::tests::test_empty_book_spread_and_mid ... ok
+test orderbook::tests::test_invalid_qty_returns_error ... ok
+test orderbook::tests::test_level_deletion_on_zero_qty ... ok
+test orderbook::tests::test_ordered_float_validation ... ok
+
+test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 148 tests
+test binance::connection::tests::test_connection_state_enum ... ok
+test binance::connection::tests::test_add_stream_and_build_url ... ok
+test binance::connection::tests::test_initialization ... ok
+test binance::client::tests::test_exchange_info_methods ... ok
+test binance::client::tests::test_exchange_stream_object_safety ... ok
+test binance::client::tests::for_network_selects_matching_stream_endpoint ... ok
+test binance::klines::tests::empty_array_is_empty_vec ... ok
+test binance::dto::tests::stream_wrapper_deserialization ... ok
+test binance::dto::tests::kline_event_to_candle_conversion_success ... ok
+test binance::klines::tests::parses_depth_snapshot ... ok
+test binance::dto::tests::depth_event_to_depth_update_conversion_success ... ok
+test binance::dto::tests::kline_event_to_candle_conversion_failure_invalid_price ... ok
+test binance::filters::tests::missing_notional_filter_means_zero ... ok
+test binance::filters::tests::derives_decimals_and_minimums ... ok
+test binance::filters::tests::handles_other_powers_of_ten ... ok
+test binance::klines::tests::base_url_matches_network ... ok
+test binance::filters::tests::rejects_non_power_of_ten_ticks ... ok
+test binance::connection::tests::test_build_url_no_streams ... ok
+test binance::klines::tests::parses_rows_into_candles_in_order ... ok
+test binance::filters::tests::unknown_symbol_and_garbage_are_errors ... ok
+test binance::dto::tests::depth_event_to_depth_update_conversion_failure_invalid_qty ... ok
+test binance::client::tests::test_disconnect_cleans_up_task ... ok
+test binance::connection::tests::test_disconnect ... ok
+test binance::client::tests::test_reconnect_returns_error ... ok
+test binance::client::tests::test_subscribe_after_connect_fails ... ok
+test binance::klines::tests::rejects_malformed_depth ... ok
+test binance::client::tests::test_stream_registration ... ok
+test binance::connection::tests::test_backoff_sequence ... ok
+test binance::client::tests::test_mock_end_to_end_flow ... ok
+test binance::klines::tests::rejects_malformed_rows ... ok
+test binance::rest::tests::server_time_response_parses ... ok
+test binance::rest::tests::test_client_creation_empty_key ... ok
+test binance::rest::tests::test_parse_balances_with_string_numbers ... ok
+test binance::rest::tests::test_parse_order_response_with_string_numbers ... ok
+test binance::router::tests::channel_registration_and_kline_routing ... ok
+test binance::router::tests::run_loop_processes_messages_until_closed ... ok
+test binance::router::tests::unknown_event_and_malformed_json_skipped ... ok
+test binance::router::tests::unfinished_kline_is_not_routed ... ok
+test binance::signing::tests::test_build_signed_query_empty ... ok
+test binance::router::tests::wrapped_depth_routing ... ok
+test binance::signing::tests::test_build_signed_query_with_params ... ok
+test binance::rest::tests::test_base_url_testnet ... ok
+test binance::rest::tests::test_base_url_mainnet ... ok
+test binance::signing::tests::test_sign_request_empty_query_has_no_leading_ampersand ... ok
+test binance::signing::tests::test_sign_empty_query ... ok
+test binance::signing::tests::test_sign_deterministic ... ok
+test binance::signing::tests::test_sign_request_flow ... ok
+test binance::signing::tests::test_sign_with_params ... ok
+test binance::signing::tests::test_signature_differs_with_different_query ... ok
+test binance::signing::tests::test_signature_differs_with_different_secret ... ok
+test credentials::tests::test_credentials_display ... ok
+test credentials::tests::test_credentials_network_check ... ok
+test credentials::tests::test_credentials_validation ... ok
+test credentials::tests::test_network_display ... ok
+test error::tests::channel_closed_display ... ok
+test error::tests::connection_failed_display ... ok
+test error::tests::core_error_transparent_propagation ... ok
+test error::tests::message_parse_failed_display ... ok
+test error::tests::subscription_failed_display ... ok
+test error::tests::timeout_display ... ok
+test keystore::tests::test_entry_key_format ... ok
+test kraken::client::tests::double_connect_is_rejected_and_exchange_info_is_correct ... ok
+test kraken::klines::tests::parses_rows_to_candles_in_milliseconds ... ok
+test kraken::client::tests::rejects_bad_symbol_and_interval ... ok
+test kraken::klines::tests::surfaces_api_errors_and_garbage ... ok
+test kraken::rest::tests::api_errors_are_surfaced ... ok
+test kraken::router::tests::emits_candle_only_when_next_interval_begins ... ok
+test kraken::rest::tests::nonce_is_strictly_increasing ... ok
+test kraken::rest::tests::rejects_testnet_and_empty_credentials ... ok
+test kraken::rest::tests::orders_are_refused ... ok
+test kraken::router::tests::ignores_heartbeats_acks_garbage_and_unknown_symbols ... ok
+test kraken::router::tests::parses_rfc3339_timestamps ... ok
+test kraken::client::tests::subscribe_builds_v2_messages ... ok
+test kraken::router::tests::routes_book_updates_with_zero_quantity_levels ... ok
+test kraken::signing::tests::rejects_non_base64_secret ... ok
+test kraken::signing::tests::different_path_changes_signature ... ok
+test okx::client::tests::backoff_beginnt_bei_einer_sekunde_und_deckelt_bei_dreissig ... ok
+test kraken::signing::tests::matches_documented_test_vector ... ok
+test kraken::rest::tests::parses_balance_envelope ... ok
+test okx::client::tests::for_network_selects_matching_endpoints_and_info ... ok
+test kraken::router::tests::snapshot_seeds_without_emitting_history ... ok
+test okx::client::tests::candles_go_to_business_and_books_to_public ... ok
+test okx::client::tests::perpetual_symbols_are_accepted_and_malformed_ones_rejected ... ok
+test okx::client::tests::region_selects_eea_hosts_only_when_requested ... ok
+test okx::client::tests::validate_symbol_accepts_all_okx_contract_forms ... ok
+test okx::client::tests::rejects_bad_symbol_and_interval ... ok
+test okx::client::tests::validate_symbol_rejects_malformed_symbols ... ok
+test keystore::tests::test_network_mismatch_protection ... ok
+test okx::instrument::tests::contract_id_umfasst_alle_drei_familien ... ok
+test okx::instrument::tests::contracts_convert_back_to_base ... ok
+test okx::instrument::tests::erkennt_datierte_futures ... ok
+test okx::instrument::tests::float_noise_does_not_lose_a_contract ... ok
+test okx::instrument::tests::inst_type_aus_der_notierung ... ok
+test okx::instrument::tests::liest_die_abrechnungswaehrung_aus_settle_ccy ... ok
+test okx::instrument::tests::parses_swap_fields_from_okx_payload ... ok
+test okx::instrument::tests::parses_xperp_futures_fields_and_converts_contracts ... ok
+test okx::instrument::tests::rejects_non_positive_and_non_finite_quantities ... ok
+test okx::instrument::tests::rejects_payload_with_missing_or_zero_fields ... ok
+test okx::instrument::tests::rejects_size_below_minimum_instead_of_rounding_up ... ok
+test okx::instrument::tests::rounds_down_to_whole_contracts ... ok
+test okx::signing::tests::formats_iso_timestamps ... ok
+test okx::klines::tests::only_demo_sends_simulated_trading_header ... ok
+test okx::klines::tests::returns_confirmed_candles_oldest_first ... ok
+test okx::swap::tests::contracts_are_formatted_to_lot_precision ... ok
+test okx::rest::tests::base_url_can_be_switched_and_is_normalized ... ok
+test okx::rest::tests::constructor_validates_inputs_and_demo_flag ... ok
+test okx::rest::tests::envelope_ok_and_errors ... ok
+test okx::rest::tests::maps_balances ... ok
+test okx::rest::tests::maps_pending_order ... ok
+test okx::swap::tests::leverage_is_capped_at_ten ... ok
+test okx::rest::tests::maps_states_and_rejects_bad_ids ... ok
+test okx::router::tests::ignores_acks_errors_garbage_and_other_instruments ... ok
+test okx::router::tests::emits_only_confirmed_candles_once ... ok
+test okx::router::tests::routes_book_snapshot_and_zero_size_updates ... ok
+test okx::swap::tests::only_net_mode_passes_the_position_check ... ok
+test okx::swap_client::tests::demo_xperp_load_instrument ... ignored
+test okx::swap_client::tests::contract_id_recognizes_swap_and_xperp ... ok
+test okx::signing::tests::signature_matches_independent_computation ... ok
+test okx::klines::tests::surfaces_api_errors_and_garbage ... ok
+test okx::swap_client::tests::empty_text_counts_as_zero_but_missing_field_fails_closed ... ok
+test okx::swap::tests::limit_order_body_carries_price ... ok
+test okx::swap::tests::market_order_body_is_isolated_without_target_currency ... ok
+test okx::rest::tests::place_order_validates_before_any_request ... ok
+test okx::instrument::tests::spot_instrument_refuses_contract_conversion ... ok
+test okx::swap_client::tests::empty_result_means_flat_perpetual ... ok
+test okx::swap::tests::leverage_body_is_isolated ... ok
+test okx::signing::tests::body_and_method_change_signature ... ok
+test okx::swap_client::tests::flat_position_has_no_liquidation_price ... ok
+test okx::swap_client::tests::liquidation_preis_null_bedeutet_keine_liquidation ... ok
+test okx::swap_client::tests::long_position_converts_contracts_and_carries_upl ... ok
+test okx::swap_client::tests::open_position_carries_mark_and_liquidation_price ... ok
+test okx::swap_client::tests::other_instruments_are_ignored ... ok
+test okx::swap_client::tests::short_position_is_negative_in_base ... ok
+test okx::swap_client::tests::xperp_order_body_below_min_size_fails_closed ... ok
+test okx::swap_client::tests::xperp_position_parses_like_swap ... ok
+test okx::swap_client::tests::xperp_order_body_converts_base_to_contracts ... ok
+test trading::tests::test_account_balance_serialization ... ok
+test trading::tests::test_account_balance_total ... ok
+test trading::tests::test_order_request_display ... ok
+test trading::tests::test_order_request_limit ... ok
+test trading::tests::test_order_request_market ... ok
+test traits::tests::depth_update_construction_and_equality ... ok
+test venue::tests::default_symbols_use_each_exchanges_notation ... ok
+test venue::tests::only_kraken_lacks_a_test_environment ... ok
+test venue::tests::parses_case_insensitively_and_roundtrips ... ok
+test venue::tests::stream_factory_accepts_each_exchanges_default_symbol ... ok
+test keystore::tests::test_credentials_roundtrip ... ok
+test okx::client::tests::baut_nach_abgerissener_verbindung_neu_auf ... ok
+
+test result: ok. 147 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+
+running 7 tests
+test test_binance_client_creation ... ignored
+test test_binance_invalid_credentials ... ignored
+test test_binance_testnet_creation ... ignored
+test test_get_balance ... ignored
+test test_get_open_orders ... ignored
+test test_place_market_order ... ignored
+test test_order_request_creation ... ok
+
+test result: ok. 1 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test eea_btc_usdt_swap_rules_match_expected_contract_size ... ignored, braucht Netzwerkzugang zu eea.okx.com
+test unknown_swap_instrument_is_rejected ... ignored, braucht Netzwerkzugang zu eea.okx.com
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 41 tests
+test error::tests::test_drawdown_violation_display ... ok
+test error::tests::test_liquidation_too_close_display ... ok
+test error::tests::test_leverage_too_high_display ... ok
+test guard::tests::test_position_size_within_limit ... ok
+test error::tests::test_position_size_violation_display ... ok
+test guard::tests::test_loss_above_daily_limit_is_rejected ... ok
+test kill_switch::tests::test_kill_switch_trip ... ok
+test kill_switch::tests::test_kill_switch_clone_shared_state ... ok
+test kill_switch::tests::test_kill_switch_multiple_subscribers ... ok
+test leverage_guard::tests::test_liquidation_distance_calculation_high_leverage ... ok
+test guard::tests::test_profit_does_not_count_as_daily_loss ... ok
+test guard::tests::test_run_baseline_is_set_once_and_gains_do_not_block ... ok
+test guard::tests::test_run_baseline_makes_loss_limit_independent_of_declared_initial_balance ... ok
+test kill_switch::tests::test_default_create ... ok
+test kill_switch::tests::test_kill_switch_creation ... ok
+test kill_switch::tests::test_kill_switch_broadcast ... ok
+test kill_switch::tests::test_kill_switch_idempotent_trip ... ok
+test leverage_guard::tests::test_leverage_within_limit ... ok
+test guard::tests::test_drawdown_within_limit ... ok
+test leverage_guard::tests::test_liquidation_distance_sufficient ... ok
+test leverage_guard::tests::test_leverage_exceeds_limit ... ok
+test guard::tests::test_peak_equity_tracking ... ok
+test leverage_guard::tests::test_liquidation_distance_calculation_edge_case ... ok
+test leverage_guard::tests::test_leverage_negative_rejected ... ok
+test leverage_guard::tests::test_liquidation_distance_calculation_low_leverage ... ok
+test error::tests::test_kill_switch_violation ... ok
+test guard::tests::test_default_guard_has_no_run_baseline ... ok
+test guard::tests::test_position_size_exceeds_limit ... ok
+test guard::tests::test_drawdown_exceeds_limit ... ok
+test leverage_guard::tests::test_validate_invalid_liquidation_distance_too_high ... ok
+test leverage_guard::tests::test_liquidation_distance_too_close ... ok
+test leverage_guard::tests::test_validate_invalid_liquidation_distance_zero ... ok
+test leverage_guard::tests::test_validate_invalid_max_leverage_too_low ... ok
+test leverage_guard::tests::test_validate_mainnet_config ... ok
+test leverage_guard::tests::test_validate_valid_config ... ok
+test limits::tests::test_mainnet_limits ... ok
+test limits::tests::test_risk_limits_new ... ok
+test limits::tests::test_testnet_limits ... ok
+test limits::tests::test_validate_invalid_drawdown_pct ... ok
+test limits::tests::test_validate_positive_values ... ok
+test limits::tests::test_validate_zero_position_size ... ok
+
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 75 tests
+test ast::tests::test_stop_loss_statement ... ok
+test ast::tests::test_ast_construction_with_signal_buy ... ok
+test ast::tests::test_ast_construction_if_rsi_lt_30_buy ... ok
+test ast::tests::test_take_profit_statement ... ok
+test error::tests::test_core_error_conversion ... ok
+test ast::tests::test_binary_op_copy_and_equality ... ok
+test evaluator::tests::test_evaluate_division_by_zero ... ok
+test ast::tests::test_expr_negate_and_assign ... ok
+test evaluator::tests::test_evaluate_lowest_function ... ok
+test error::tests::test_error_display_formatting ... ok
+test ast::tests::test_signal_variants ... ok
+test evaluator::tests::test_evaluate_atr_function ... ok
+test evaluator::tests::test_evaluate_empty_candle_slice ... ok
+test evaluator::tests::test_evaluate_extended_with_stop_loss ... ok
+test evaluator::tests::test_evaluate_extended_with_trailing_stop ... ok
+test evaluator::tests::test_evaluate_highest_function ... ok
+test evaluator::tests::test_evaluate_insufficient_highest ... ok
+test ast::tests::test_trailing_stop_statement ... ok
+test evaluator::tests::test_evaluate_rsi_buy_signal ... ok
+test evaluator::tests::test_evaluate_sma_cross_signal ... ok
+test evaluator::tests::test_evaluate_undefined_function ... ok
+test error::tests::test_error_equality ... ok
+test evaluator::tests::test_evaluate_variable_binding ... ok
+test evaluator::tests::test_prev_detects_crossover ... ok
+test evaluator::tests::test_stop_loss_and_take_profit_after_signal_inside_if_block ... ok
+test evaluator::tests::test_new_indicators_callable_from_script ... ok
+test extra::tests::test_adx_high_in_trend_low_in_chop ... ok
+test evaluator::tests::test_evaluate_short_circuit_and_or ... ok
+test extra::tests::test_bollinger_flat_series_has_zero_width ... ok
+test extra::tests::test_bollinger_bands_are_symmetric ... ok
+test extra::tests::test_macd_positive_in_uptrend_and_none_when_short ... ok
+test extra::tests::test_stoch_k_extremes ... ok
+test grid::tests::test_generate_buy_orders ... ok
+test grid::tests::test_generate_orders_with_leverage ... ok
+test grid::tests::test_generate_sell_orders ... ok
+test grid::tests::test_grid_config_creation ... ok
+test grid::tests::test_grid_config_from_json_rejects_invalid_values ... ok
+test grid::tests::test_grid_config_json_parse ... ok
+test grid::tests::test_grid_config_validation_nan_values ... ok
+test grid::tests::test_grid_config_json_roundtrip ... ok
+test grid::tests::test_grid_config_validation_negative_spacing ... ok
+test grid::tests::test_grid_config_validation_zero_levels ... ok
+test lexer::tests::test_tokenize_all_operators_and_delimiters ... ok
+test lexer::tests::test_tokenize_decimal_numbers ... ok
+test lexer::tests::test_tokenize_empty_input ... ok
+test lexer::tests::test_tokenize_gte_operator ... ok
+test lexer::tests::test_tokenize_if_rsi_buy ... ok
+test lexer::tests::test_tokenize_skips_comments ... ok
+test lexer::tests::test_tokenize_unrecognized_character ... ok
+test order_intent::tests::test_evaluator_state_cloneable ... ok
+test order_intent::tests::test_evaluator_state_creation ... ok
+test order_intent::tests::test_order_intent_creation ... ok
+test order_intent::tests::test_trailing_stop_not_triggered ... ok
+test order_intent::tests::test_trailing_stop_triggered ... ok
+test parser::tests::test_parse_assign_statement ... ok
+test parser::tests::test_parse_buy_and_sell_without_parens ... ok
+test parser::tests::test_parse_if_buy_statement ... ok
+test parser::tests::test_parse_if_else_branches ... ok
+test parser::tests::test_parse_logical_and_or_precedence ... ok
+test parser::tests::test_parse_missing_closing_brace ... ok
+test parser::tests::test_parse_operator_precedence ... ok
+test parser::tests::test_parse_stop_loss_statement ... ok
+test parser::tests::test_parse_take_profit_statement ... ok
+test parser::tests::test_parse_trailing_stop_statement ... ok
+test parser::tests::test_parse_unary_negation ... ok
+test parser::tests::test_parse_unexpected_token ... ok
+test tests::test_backward_compat_compile_and_run ... ok
+test tests::test_compile_and_run_buy_signal ... ok
+test tests::test_compile_and_run_eval_error ... ok
+test tests::test_compile_and_run_extended_with_stop_loss ... ok
+test tests::test_compile_and_run_extended_with_trailing_stop ... ok
+test tests::test_compile_and_run_hold_signal ... ok
+test tests::test_compile_and_run_lex_error ... ok
+test tests::test_compile_and_run_parse_error ... ok
+test tests::test_compile_and_run_sell_signal ... ok
+
+test result: ok. 75 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 32 tests
+test account_feed::tests::test_asset_rank_puts_main_assets_first ... ok
+test app::tests::test_panel_kind_titles ... ok
+test feed::tests::test_log_and_connected_helpers_update_state ... ok
+test state::tests::test_latest_candles_unknown_symbol ... ok
+test state::tests::test_latest_candles_limits_count ... ok
+test state::tests::test_set_account_snapshot_derives_usdt_balance ... ok
+test app::tests::test_omnitrade_app_default_initialization ... ok
+test app::tests::test_layout_contains_all_four_panels ... ok
+test app::tests::test_uistate_snapshot_reading ... ok
+test state::tests::test_set_candles_replaces_series ... ok
+test state::tests::test_apply_depth_creates_book_and_removes_zero_levels ... ok
+test state::tests::test_ui_state_send_and_sync ... ok
+test state::tests::test_push_log_is_bounded ... ok
+test state::tests::test_update_candle_appends ... ok
+test widgets::chart::tests::test_handle_scroll_panning ... ok
+test state::tests::test_update_candle_replaces_open_candle_with_same_timestamp ... ok
+test state::tests::test_update_orderbook_and_account ... ok
+test status_feed::tests::test_apply_fills_state ... ok
+test widgets::depth::tests::test_spread_percentage_calculation ... ok
+test status_feed::tests::test_apply_replaces_candles_not_appends ... ok
+test status_feed::tests::test_resolve_path_prefers_argument ... ok
+test widgets::depth::tests::test_max_levels_truncation ... ok
+test status_feed::tests::test_lines ... ok
+test widgets::chart::tests::test_candle_color_bullish_and_bearish ... ok
+test widgets::chart::tests::test_compute_visible_range ... ok
+test widgets::depth::tests::test_depth_widget_default_and_new ... ok
+test state::tests::test_set_orderbook_snapshot_replaces_book ... ok
+test status_feed::tests::test_stopped_is_not_connected_and_error_marks_feed ... ok
+test kill::tests::engage_and_clear_roundtrip ... ok
+test widgets::depth::tests::test_empty_order_book_rendering ... ok
+test app::tests::test_kill_button_engages_and_reset_button_clears_flag ... ok
+test status_feed::tests::test_read_status_errors ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 3 tests
+test tests::defaults_to_binance_testnet_with_default_symbol ... ok
+test tests::rejects_bad_input ... ok
+test tests::exchange_flag_picks_default_symbol_and_accepts_explicit_one ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test omnitrade-core\src\indicators\ema.rs - indicators::ema::Ema (line 20) ... ok
+test omnitrade-core\src\indicators\volatility.rs - indicators::volatility::Volatility (line 16) ... ok
+test omnitrade-core\src\indicators\sma.rs - indicators::sma::Sma (line 16) ... ok
+test omnitrade-core\src\ring_buffer.rs - ring_buffer (line 9) ... ok
+test omnitrade-core\src\indicators\rsi.rs - indicators::rsi::Rsi (line 29) ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling omnitrade-cli v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.28s
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_cli-26e128aabd7763e7.exe)
+     Running unittests src\lib.rs (target-offline\debug\deps\omnitrade_core-7012e903d18310f5.exe)
+     Running unittests src\lib.rs (target-offline\debug\deps\omnitrade_engine-7e900f6447f3a134.exe)
+     Running unittests src\lib.rs (target-offline\debug\deps\omnitrade_exchange-91ce91d3323df721.exe)
+     Running tests\binance_integration.rs (target-offline\debug\deps\binance_integration-067680bca1ecc545.exe)
+     Running tests\okx_eea_public.rs (target-offline\debug\deps\okx_eea_public-4e4e7aeb7b5859bb.exe)
+     Running unittests src\lib.rs (target-offline\debug\deps\omnitrade_risk-05d01a91480610c6.exe)
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_risk-1bd0e77525355482.exe)
+     Running unittests src\lib.rs (target-offline\debug\deps\omnitrade_script-467ed4b3229d0bff.exe)
+     Running unittests src\lib.rs (target-offline\debug\deps\omnitrade_ui-5050fcea1858e423.exe)
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_ui-69e1700a755c55db.exe)
+   Doc-tests omnitrade_core
+   Doc-tests omnitrade_engine
+   Doc-tests omnitrade_exchange
+   Doc-tests omnitrade_risk
+   Doc-tests omnitrade_script
+   Doc-tests omnitrade_ui

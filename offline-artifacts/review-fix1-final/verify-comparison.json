@@ -1,0 +1,10 @@
+{
+  "candles": 1440,
+  "orders": 206,
+  "accepted": 107,
+  "rejected": 99,
+  "position": 0.30000000000000004,
+  "equity": 50.00923664999997,
+  "fixture_hashes_verified": 5,
+  "replay_sha256": "88b067a92318634aa551f3c6462b72876af7c6b61af7978622a782ed1ba40b95"
+}
