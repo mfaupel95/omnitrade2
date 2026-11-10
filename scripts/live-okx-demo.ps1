@@ -21,7 +21,6 @@ if (-not $env:OKX_DEMO_API_KEY -or -not $env:OKX_DEMO_API_SECRET -or -not $env:O
 $env:OKX_API_KEY = $env:OKX_DEMO_API_KEY
 $env:OKX_API_SECRET = $env:OKX_DEMO_API_SECRET
 $env:OKX_PASSPHRASE = $env:OKX_DEMO_API_PASSPHRASE
-$env:OKX_ENV_ONLY = '1'
 $env:OKX_REGION = 'eea'
 
 $liveArgs = @('live', '--script', 'strategien/ema_cross_20_50.omni', '--symbol', 'BTC-USDC',
