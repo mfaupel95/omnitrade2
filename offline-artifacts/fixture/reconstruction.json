@@ -1,0 +1,1365 @@
+{
+  "accepted": 107,
+  "rejected": 99,
+  "position": 0.3,
+  "closed_lots": 52,
+  "gross_realized": 0.5728999999999914,
+  "fees": 0.4125633500000001,
+  "net_realized": 0.1603366499999913,
+  "unrealized": -0.15109999999999674,
+  "equity": 50.00923664999999,
+  "ledger": [
+    {
+      "timestamp_ms": 1794099300000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.574,
+      "position": -0.1
+    },
+    {
+      "timestamp_ms": 1794099360000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.612,
+      "position": -0.2
+    },
+    {
+      "timestamp_ms": 1794099420000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.605,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794099480000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794099540000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794099660000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794099720000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794099780000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794100620000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.494,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794101400000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.593,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794101520000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794101580000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794102180000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.5,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794102240000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.52,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794102720000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.529,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794104460000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.457,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794104520000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.457,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794104580000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.457,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794104640000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794106620000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794106680000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794106740000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794106800000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794108000000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.48,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794108060000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.467,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794108120000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.46,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794108180000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.421,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794108240000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.421,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794108300000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.421,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794108360000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794108420000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794108720000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794108780000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794108840000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794108900000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794109800000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.484,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794110460000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.429,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794110520000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.429,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794110580000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.429,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794110760000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.44,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794111900000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.341,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794111960000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114120000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114660000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114720000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114780000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114840000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114900000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794114960000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115020000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115080000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115140000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115200000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115260000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115320000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794115380000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794116100000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.12,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794116340000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.12,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794116400000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.092,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794117000000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.16,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794117060000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.2,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794119400000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.238,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794119460000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.206,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794119520000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.206,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794119580000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.206,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794119640000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.206,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794119700000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794119760000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794119820000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794119880000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794119940000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794120000000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794120060000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794121740000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.143,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794121800000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.189,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794121980000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.167,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794122040000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.22,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794122100000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.247,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794122760000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.101,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794123180000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.19,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794123240000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.2,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794123960000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794124800000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.1,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794124860000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.1,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794127260000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.091,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794127320000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.091,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794127380000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794127440000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794127500000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794127560000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130080000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130140000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130200000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130260000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130320000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130380000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794130440000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794131460000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.005,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794131520000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.005,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794132180000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.994,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794134580000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.943,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794134640000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.943,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794134700000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.952,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794134760000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794134820000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794134880000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794134940000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794135000000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794135360000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.871,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794135420000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.871,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794138780000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.263,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794138840000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.264,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794139320000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.247,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794139920000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.24,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794139980000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794140040000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794140100000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794140160000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794140220000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794141420000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794141480000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794141540000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794142020000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.3,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794142080000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.327,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794142200000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.46,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794144600000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.643,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794144660000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.61,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794144720000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.637,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145020000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145080000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145260000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145320000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145380000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145440000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145500000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145560000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145680000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794145740000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794148260000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.42,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794148320000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.4,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794148380000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.467,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794148440000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.493,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794148500000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.502,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794148560000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.519,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794148620000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794148680000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794148860000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794149700000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.42,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794149880000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.42,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794149940000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.382,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794150180000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.4,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794150240000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.4,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794150420000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.367,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794152160000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.4,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794152220000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.4,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794152280000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.429,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794152340000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.485,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794152400000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 77.499,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794153480000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.333,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794153540000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.352,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794153960000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.306,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794154020000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 77.293,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794160380000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.583,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794160680000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.631,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794160740000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.632,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794160800000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.692,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794160860000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.724,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794160920000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794160980000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794161040000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794161100000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794163500000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.943,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794163560000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.934,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794164400000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.905,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794164460000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.905,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794164520000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.946,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794164580000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 76.912,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794164640000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794164700000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794164760000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794165900000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.92,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794165960000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.893,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794166080000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.931,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794166200000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.987,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794166260000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.968,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794166320000,
+      "signal": -1,
+      "accepted": true,
+      "fill": 76.988,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794166380000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794176280000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794176400000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794178320000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794178380000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794178440000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794178560000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794178860000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794178980000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794179100000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794179160000,
+      "signal": -1,
+      "accepted": false,
+      "position": -0.30000000000000004
+    },
+    {
+      "timestamp_ms": 1794180900000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 75.08,
+      "position": -0.20000000000000004
+    },
+    {
+      "timestamp_ms": 1794180960000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 75.025,
+      "position": -0.10000000000000003
+    },
+    {
+      "timestamp_ms": 1794181080000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 74.983,
+      "position": -2.7755575615628914e-17
+    },
+    {
+      "timestamp_ms": 1794181140000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 74.993,
+      "position": 0.09999999999999998
+    },
+    {
+      "timestamp_ms": 1794181200000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 74.883,
+      "position": 0.19999999999999998
+    },
+    {
+      "timestamp_ms": 1794181260000,
+      "signal": 1,
+      "accepted": true,
+      "fill": 74.934,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794181320000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794181380000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    },
+    {
+      "timestamp_ms": 1794181440000,
+      "signal": 1,
+      "accepted": false,
+      "position": 0.3
+    }
+  ],
+  "status": "partial_reconstruction_NOT_execution_parity",
+  "candles": 1440,
+  "first_ms": 1794096000000,
+  "last_ms": 1794182340000,
+  "input_sha256": "3ce032663f31a1673118af4c4be86b666a2d951c1becb46c31202603ba92184a",
+  "fee_assumption": 0.0005,
+  "slippage_assumption": 0.0,
+  "stop_applied": false,
+  "forced_end_close": false
+}

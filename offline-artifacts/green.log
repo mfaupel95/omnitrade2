@@ -1,0 +1,10 @@
+   Compiling omnitrade-cli v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.60s
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_cli-05778cbfbe952fe7.exe)
+
+running 2 tests
+test live_loop::offline_execution::offline_stateful_fill_accumulates_one_step ... ok
+test live_loop::offline_execution::replay::offline_hype_real_loop ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 107 filtered out; finished in 36.88s
+
