@@ -23,6 +23,8 @@ mod risk_tests;
 #[cfg(test)]
 mod test_support;
 #[cfg(test)]
+mod offline_execution;
+#[cfg(test)]
 mod tests;
 
 pub(crate) use risk::{

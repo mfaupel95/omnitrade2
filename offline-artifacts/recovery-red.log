@@ -1,0 +1,191 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling windows-link v0.2.1
+   Compiling itoa v1.0.19
+   Compiling bytes v1.12.1
+   Compiling pin-project-lite v0.2.17
+   Compiling stable_deref_trait v1.2.1
+   Compiling cfg-if v1.0.5
+   Compiling version_check v0.9.5
+   Compiling serde_core v1.0.229
+   Compiling typenum v1.20.1
+   Compiling once_cell v1.21.4
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling litemap v0.8.3
+   Compiling memchr v2.8.3
+   Compiling zmij v1.0.23
+   Compiling futures-core v0.3.34
+   Compiling serde v1.0.229
+   Compiling utf_types v1.0.0
+   Compiling thiserror v2.0.21
+   Compiling writeable v0.6.4
+   Compiling zerocopy v0.8.63
+   Compiling serde_json v1.0.154
+   Compiling futures-sink v0.3.34
+   Compiling icu_normalizer_data v2.4.0
+   Compiling icu_properties_data v2.4.0
+   Compiling native-tls v0.2.18
+   Compiling windows-sys v0.61.2
+   Compiling tracing-core v0.1.36
+   Compiling utf8_iter v1.1.0
+   Compiling httparse v1.10.1
+   Compiling getrandom v0.3.4
+   Compiling subtle v2.6.1
+   Compiling windows_x86_64_msvc v0.48.5
+   Compiling slab v0.4.12
+   Compiling fnv v1.0.7
+   Compiling smallvec v1.16.5
+   Compiling rustversion v1.0.23
+   Compiling futures-task v0.3.34
+   Compiling http v0.2.12
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.3
+   Compiling log v0.4.35
+   Compiling cpufeatures v0.2.17
+   Compiling try-lock v0.2.5
+   Compiling percent-encoding v2.3.2
+   Compiling futures-channel v0.3.34
+   Compiling generic-array v0.14.7
+   Compiling utf8parse v0.2.2
+   Compiling once_cell_polyfill v1.70.2
+   Compiling ryu v1.0.23
+   Compiling lazy_static v1.5.1
+   Compiling tower-service v0.3.3
+   Compiling httpdate v1.0.3
+   Compiling want v0.3.2
+   Compiling anstyle v1.0.14
+   Compiling form_urlencoded v1.2.2
+   Compiling http v1.5.0
+   Compiling simdutf8 v0.1.5
+   Compiling scopeguard v1.2.0
+   Compiling utf-8 v0.7.6
+   Compiling core_detect v1.0.0
+   Compiling windows-targets v0.52.6
+   Compiling indexmap v2.14.2
+   Compiling rand_core v0.9.5
+   Compiling http-body v0.4.6
+   Compiling windows-targets v0.48.5
+   Compiling anstyle-parse v1.0.0
+   Compiling windows-sys v0.52.0
+   Compiling data-encoding v2.11.1
+   Compiling windows-sys v0.48.0
+   Compiling base64 v0.21.7
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling regex-syntax v0.8.11
+   Compiling colorchoice v1.0.5
+   Compiling multiversion_no_op v1.0.0
+   Compiling ipnet v2.12.2
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling sync_wrapper v0.1.2
+   Compiling byteorder v1.5.0
+   Compiling clap_lex v1.1.1
+   Compiling digest v0.10.7
+   Compiling strsim v0.11.1
+   Compiling heck v0.5.0
+   Compiling mime v0.3.18
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling encoding_rs v0.8.44
+   Compiling rustls-pemfile v1.0.4
+   Compiling sharded-slab v0.1.7
+   Compiling tracing-log v0.2.0
+   Compiling socket2 v0.5.10
+   Compiling keyring v2.3.3
+   Compiling sha1 v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling hmac v0.12.1
+   Compiling csv-core v0.1.13
+   Compiling thread_local v1.1.10
+   Compiling urlencoding v2.1.3
+   Compiling base64 v0.22.1
+   Compiling hex v0.4.3
+   Compiling csv v1.4.0
+   Compiling regex-automata v0.4.18
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling schannel v0.1.30
+   Compiling anstyle-wincon v3.0.11
+   Compiling anstyle-query v1.1.5
+   Compiling nu-ansi-term v0.50.3
+   Compiling ppv-lite86 v0.2.21
+   Compiling anstream v1.0.0
+   Compiling rand_chacha v0.9.0
+   Compiling clap_builder v4.6.7
+   Compiling winreg v0.50.0
+   Compiling rand v0.9.5
+   Compiling matchers v0.2.0
+   Compiling synstructure v0.14.0
+   Compiling tracing-attributes v0.1.31
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerovec-derive v0.11.7
+   Compiling displaydoc v0.2.7
+   Compiling tokio-macros v2.7.2
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.21
+   Compiling futures-macro v0.3.34
+   Compiling async-trait v0.1.92
+   Compiling clap_derive v4.6.7
+   Compiling tracing v0.1.44
+   Compiling tracing-subscriber v0.3.23
+   Compiling tokio v1.54.1
+   Compiling futures-util v0.3.34
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.4
+   Compiling tungstenite v0.26.2
+   Compiling zerovec v0.11.9
+   Compiling zerotrie v0.2.5
+   Compiling clap v4.6.7
+   Compiling tinystr v0.8.5
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.4.0
+   Compiling icu_locale_core v2.4.0
+   Compiling omnitrade-core v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-core)
+   Compiling serde_urlencoded v0.7.1
+   Compiling omnitrade-script v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-script)
+   Compiling icu_provider v2.4.0
+   Compiling icu_properties v2.4.0
+   Compiling icu_normalizer v2.4.0
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling tokio-util v0.7.20
+   Compiling tokio-native-tls v0.3.1
+   Compiling omnitrade-risk v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-risk)
+   Compiling tokio-tungstenite v0.26.2
+   Compiling omnitrade-engine v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-engine)
+   Compiling h2 v0.3.27
+   Compiling hyper v0.14.32
+   Compiling hyper-tls v0.5.0
+   Compiling reqwest v0.11.27
+   Compiling omnitrade-exchange v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-exchange)
+   Compiling omnitrade-cli v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-cli)
+warning: field `fills` is never read
+  --> omnitrade-cli\src\live_loop\offline_execution.rs:11:62
+   |
+11 | struct Book { qty: f64, cash: f64, average: f64, price: f64, fills: usize }
+   |        ---- field in this struct                             ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `omnitrade-cli` (bin "omnitrade-cli" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 40s
+     Running unittests src\main.rs (target-offline\debug\deps\omnitrade_cli-05778cbfbe952fe7.exe)
+
+running 1 test
+
+thread 'live_loop::offline_execution::offline_stateful_fill_accumulates_one_step' (71700) panicked at omnitrade-cli\src\live_loop\offline_execution.rs:48:5:
+assertion failed: (ex.book.lock().unwrap().qty - 0.1).abs() < 1e-12
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test live_loop::offline_execution::offline_stateful_fill_accumulates_one_step ... FAILED
+
+failures:
+
+failures:
+    live_loop::offline_execution::offline_stateful_fill_accumulates_one_step
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 107 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p omnitrade-cli --bin omnitrade-cli`
