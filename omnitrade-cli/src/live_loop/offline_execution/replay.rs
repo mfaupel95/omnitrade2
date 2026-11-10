@@ -35,6 +35,7 @@ impl ExchangeStream for Replay {
         let status = self.status.clone();
         let rows = self.rows.clone();
         tokio::spawn(async move {
+            let mut event_cursor = 0;
             for candle in candles {
                 ex.book.lock().expect("book").price = candle.close;
                 tx.send(candle.clone()).await.expect("live receiver");
@@ -45,7 +46,8 @@ impl ExchangeStream for Replay {
                     serde_json::from_slice(&fs::read(&status).expect("status")).expect("json");
                 assert_eq!(s["last_candle_ms"].as_u64(), Some(candle.timestamp_ms));
                 let b = ex.book.lock().expect("book");
-                rows.lock().expect("rows").push(json!({"timestamp_ms":candle.timestamp_ms,"signal":s["last_signal"],"position":b.qty,"fills":b.fills,"accepted":s["orders_placed"],"rejected":s["orders_rejected"],"price":b.price,"quantity":0.1,"equity":b.cash+b.qty*(b.price-b.average),"last_order":s["recent_orders"].as_array().and_then(|a|a.last())}));
+                rows.lock().expect("rows").push(json!({"timestamp_ms":candle.timestamp_ms,"signal":s["last_signal"],"position":b.qty,"fills":b.fills,"accepted":s["orders_placed"],"rejected":s["orders_rejected"],"price":b.price,"quantity":0.1,"cash":b.cash,"average":b.average,"fees":b.fees,"equity":b.cash+b.qty*(b.price-b.average),"events":b.events[event_cursor..],"last_order":s["recent_orders"].as_array().and_then(|a|a.last())}));
+                event_cursor = b.events.len();
             }
         });
         Ok(rx)
@@ -71,7 +73,16 @@ async fn offline_hype_real_loop() {
         })
         .collect::<Vec<_>>();
     assert_eq!(candles.len(), 1440);
-    let path = std::env::temp_dir().join(format!("offline-hype-{}.json", std::process::id()));
+    let scratch = std::env::temp_dir().join(format!(
+        "offline-hype-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir(&scratch).expect("fresh isolated scratch directory");
+    let path = scratch.join("status.json");
     let ex = FakeExchange::new();
     let rows = Arc::new(Mutex::new(Vec::new()));
     let stream = Replay {
@@ -112,11 +123,21 @@ async fn offline_hype_real_loop() {
     .expect("real loop");
     let rows = rows.lock().expect("rows");
     assert_eq!(rows.len(), 1440);
-    fs::write(
-        root.join("offline-artifacts/hype-replay.json"),
-        serde_json::to_vec_pretty(&*rows).expect("serialize"),
-    )
-    .expect("ledger");
+    use std::io::Write;
+    let output = scratch.join("hype-replay.json");
+    let data = serde_json::to_vec_pretty(&*rows).expect("serialize");
+    fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&output)
+        .unwrap()
+        .write_all(&data)
+        .unwrap();
+    if let Some(export) = std::env::var_os("OFFLINE_REPLAY_EXPORT") {
+        // Publish the complete scratch file atomically, without replacing evidence.
+        fs::hard_link(&output, export).expect("atomic no-clobber export (same volume required)");
+    }
+    println!("OFFLINE_REPLAY={}", output.display());
     assert_eq!(status.status().orders_placed, 107);
     assert_eq!(status.status().orders_rejected, 99);
     assert!((status.status().net_quantity - 0.3).abs() < 1e-10);
