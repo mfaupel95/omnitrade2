@@ -27,8 +27,8 @@ mod test_support;
 mod tests;
 
 pub(crate) use risk::{
-    account_equity, bewertungs_waehrung, check_liquidation_distance, held_base, split_symbol,
-    valid_mainnet_cap, ExposureLimit, LongOnlyGuard,
+    account_equity, bewertungs_waehrung, check_liquidation_distance, held_base,
+    is_derivative_symbol, split_symbol, valid_mainnet_cap, ExposureLimit, LongOnlyGuard,
 };
 
 /// Maximale Anzahl Kerzen, die für die Skript-Auswertung vorgehalten werden.
@@ -211,9 +211,10 @@ pub async fn live_loop(
     // Laufbestand über Neustarts: der Wrapper startet die CLI nach jedem Ende neu.
     let mut run_state = run_state::RunState::open(status.path(), symbol, &network.to_string());
     let mut exposure = max_notional.map(|cap| {
+        // Derivate: die gesamte Position zählt gegen den Deckel, auch aus einem früheren Lauf.
         ExposureLimit::new(cap)
             .allow_shorts(allow_shorts)
-            .adopt_existing(adopt)
+            .adopt_existing(adopt || is_derivative_symbol(symbol))
             .resume_owned(run_state.resume())
     });
     // Long-only gilt AUCH ohne Deckel: die Bremse haengt nicht an --max-notional.
