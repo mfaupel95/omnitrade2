@@ -354,7 +354,32 @@ pub(crate) fn run_guards(
     (exposure, long_only)
 }
 
+/// `true` für Derivate: Perpetuals (`-SWAP`, `XPERP`, `_UM_`) und datierte Futures
+/// (`...-YYMMDD`). Dort zählt die gesamte Position gegen den Deckel, ein Vorbestand gibt es nicht.
+pub(crate) fn is_derivative_symbol(symbol: &str) -> bool {
+    let s = symbol.to_ascii_uppercase();
+    let datiert = s
+        .rsplit('-')
+        .next()
+        .is_some_and(|seg| seg.len() == 6 && seg.chars().all(|c| c.is_ascii_digit()));
+    s.contains("XPERP") || s.contains("-SWAP") || s.contains("_UM_") || datiert
+}
+
 /// `true`, wenn der Deckel für Mainnet gesetzt, endlich, positiv und unter dem Höchstwert liegt.
 pub(crate) fn valid_mainnet_cap(cap: Option<f64>) -> bool {
     cap.is_some_and(|c| c.is_finite() && c > 0.0 && c <= MAINNET_HARD_CAP)
+}
+
+#[cfg(test)]
+mod derivative_tests {
+    use super::is_derivative_symbol;
+
+    #[test]
+    fn perpetuals_and_dated_futures_are_derivatives_spot_is_not() {
+        assert!(is_derivative_symbol("HYPE-USD_UM_XPERP-310801"));
+        assert!(is_derivative_symbol("BTC-USD-SWAP"));
+        assert!(is_derivative_symbol("BTC-USD-261030"));
+        assert!(!is_derivative_symbol("BTC-USDC"));
+        assert!(!is_derivative_symbol("BTCUSDT"));
+    }
 }
