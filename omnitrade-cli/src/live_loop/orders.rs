@@ -4,6 +4,7 @@ use omnitrade_core::Side;
 use omnitrade_exchange::{ExchangeTrading, OrderRequest};
 use omnitrade_risk::guard::RiskGuard;
 
+use super::run_state::RunState;
 use super::*;
 
 /// Helper: Place order after passing risk guard checks.
@@ -221,20 +222,30 @@ pub(crate) async fn place_order_guarded(
 }
 
 /// Laufbestand bei Spot: Kontostand der Basiswaehrung minus Vorbestand. Der Vorbestand
-/// wird beim ersten Abruf festgehalten, vor dem ersten Auftrag dieses Laufs. Mit `adopt`
-/// gehoert der gesamte Bestand dem Lauf.
+/// kommt aus dem Laufzustand (`run`) und wird beim ersten Abruf festgehalten. Der Laufbestand
+/// wird nach jedem Abruf gemerkt, damit ein Neustart ihn wiederfindet.
 pub(super) async fn spot_run_net(
     exchange: &impl ExchangeTrading,
     symbol: &str,
     adopt: bool,
-    start: &mut Option<f64>,
+    run: &mut RunState,
 ) -> Result<f64, String> {
     let (base, _quote) = split_symbol(symbol)
         .ok_or_else(|| format!("Symbol {symbol} laesst sich nicht zerlegen"))?;
     let balances = exchange.get_balance().await.map_err(|e| e.to_string())?;
     let held = held_base(&balances, &base, &PositionSnapshot::default());
-    let vorbestand = *start.get_or_insert(if adopt { 0.0 } else { held });
-    Ok(held - vorbestand)
+    let net = held - run.baseline(held, adopt);
+    run.record(net);
+    Ok(net)
+}
+
+/// Unterhalb dieses Nominalwerts (Quote-Währung) ist ein Spot-Verkauf Staub: die Börse
+/// lehnt ihn ab, und die Strategie würde ihn bei jeder Kerze erneut versuchen.
+pub(crate) const SPOT_DUST_NOTIONAL_USD: f64 = 1.0;
+
+/// `true` für einen Spot-Verkauf, dessen Nominalwert unter [`SPOT_DUST_NOTIONAL_USD`] liegt.
+pub(crate) fn is_spot_dust_sell(side: Side, qty: f64, price: f64) -> bool {
+    side == Side::Sell && qty * price < SPOT_DUST_NOTIONAL_USD
 }
 
 /// Richtung des Auftrags aus Signal und signierter Boersenposition (`net`: > 0 long,

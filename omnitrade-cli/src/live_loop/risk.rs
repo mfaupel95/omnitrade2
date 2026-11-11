@@ -4,6 +4,7 @@
 use omnitrade_core::Side;
 use omnitrade_exchange::{Account, PositionSnapshot};
 
+use super::run_state::baseline_for;
 use super::{KNOWN_QUOTES, MAINNET_HARD_CAP};
 
 /// Zerlegt ein Börsensymbol in (Basis, Quote): `BTC-USDT`, `BTC-USDT-SWAP`,
@@ -191,11 +192,15 @@ pub(crate) fn held_base(account: &Account, base: &str, position: &PositionSnapsh
 #[derive(Debug, Default)]
 pub(crate) struct LongOnlyGuard {
     start_base: Option<f64>,
+    resume: Option<f64>,
 }
 
 impl LongOnlyGuard {
     pub(crate) fn new() -> Self {
-        Self { start_base: None }
+        Self {
+            start_base: None,
+            resume: None,
+        }
     }
 
     /// Übernimmt eine bestehende Position als Laufposition (wie [`ExposureLimit::adopt_existing`]).
@@ -206,9 +211,20 @@ impl LongOnlyGuard {
         self
     }
 
+    /// Gemerkter Laufbestand aus dem letzten Lauf (siehe `run_state`). Ohne Adoption gilt
+    /// nur dieser Teil als Laufbestand, der Rest bleibt Vorbestand.
+    #[must_use]
+    pub(crate) fn resume_owned(mut self, owned: Option<f64>) -> Self {
+        self.resume = owned;
+        self
+    }
+
     /// `held` ist die aktuelle NETTO-Position (`held_base`).
     pub(crate) fn check(&mut self, side: Side, quantity: f64, held: f64) -> Result<(), String> {
-        let start = *self.start_base.get_or_insert(held);
+        let resume = self.resume;
+        let start = *self
+            .start_base
+            .get_or_insert_with(|| baseline_for(held, resume));
         let run_base = held - start;
         let after = match side {
             Side::Buy => run_base + quantity,
@@ -241,6 +257,7 @@ pub(crate) struct ExposureLimit {
     cap: f64,
     start_base: Option<f64>,
     allow_shorts: bool,
+    resume: Option<f64>,
 }
 
 impl ExposureLimit {
@@ -249,7 +266,15 @@ impl ExposureLimit {
             cap,
             start_base: None,
             allow_shorts: false,
+            resume: None,
         }
+    }
+
+    /// Gemerkter Laufbestand aus dem letzten Lauf (siehe `run_state`). Wirkt nur ohne Adoption.
+    #[must_use]
+    pub(crate) fn resume_owned(mut self, owned: Option<f64>) -> Self {
+        self.resume = owned;
+        self
     }
 
     /// Uebernimmt den Bestand beim Start als Laufposition (Baseline 0 statt
@@ -281,7 +306,10 @@ impl ExposureLimit {
         price: f64,
         held: f64,
     ) -> Result<(), String> {
-        let start = *self.start_base.get_or_insert(held);
+        let resume = self.resume;
+        let start = *self
+            .start_base
+            .get_or_insert_with(|| baseline_for(held, resume));
         let run_base = held - start;
         let after = match side {
             Side::Buy => run_base + quantity,
@@ -304,6 +332,26 @@ impl ExposureLimit {
         }
         Ok(())
     }
+}
+
+/// Deckel und Long-only-Bremse eines Laufs. Beide starten mit dem gemerkten Laufbestand
+/// (`resume`), außer der Lauf übernimmt den Bestand ausdrücklich (`adopt`).
+pub(crate) fn run_guards(
+    cap: Option<f64>,
+    allow_shorts: bool,
+    adopt: bool,
+    resume: Option<f64>,
+) -> (Option<ExposureLimit>, LongOnlyGuard) {
+    let exposure = cap.map(|cap| {
+        ExposureLimit::new(cap)
+            .allow_shorts(allow_shorts)
+            .adopt_existing(adopt)
+            .resume_owned(resume)
+    });
+    let long_only = LongOnlyGuard::new()
+        .adopt_existing(adopt)
+        .resume_owned(resume);
+    (exposure, long_only)
 }
 
 /// `true`, wenn der Deckel für Mainnet gesetzt, endlich, positiv und unter dem Höchstwert liegt.

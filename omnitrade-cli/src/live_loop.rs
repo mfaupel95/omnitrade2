@@ -26,6 +26,7 @@ mod risk_tests;
 mod risk_tests_lang;
 #[cfg(test)]
 mod risk_tests_mainnet;
+mod run_state;
 #[cfg(test)]
 mod test_support;
 #[cfg(test)]
@@ -33,7 +34,8 @@ mod tests;
 
 pub(crate) use risk::{
     account_equity, bewertungs_waehrung, check_liquidation_distance, held_base,
-    realisiert_beim_schliessen, split_symbol, valid_mainnet_cap, ExposureLimit, LongOnlyGuard,
+    realisiert_beim_schliessen, run_guards, split_symbol, valid_mainnet_cap, ExposureLimit,
+    LongOnlyGuard,
 };
 
 /// Maximale Anzahl Kerzen, die für die Skript-Auswertung vorgehalten werden.
@@ -164,15 +166,6 @@ pub struct LiveConfig<'a> {
 /// Er lässt sich nur per Code-Änderung anheben, nie per Argument.
 pub const MAINNET_HARD_CAP: f64 = 100.0;
 
-/// Unterhalb dieses Nominalwerts (Quote-Währung) ist ein Spot-Verkauf Staub: die Börse
-/// lehnt ihn ab, und die Strategie würde ihn bei jeder Kerze erneut versuchen.
-pub(crate) const SPOT_DUST_NOTIONAL_USD: f64 = 1.0;
-
-/// `true` für einen Spot-Verkauf, dessen Nominalwert unter [`SPOT_DUST_NOTIONAL_USD`] liegt.
-pub(crate) fn is_spot_dust_sell(side: Side, qty: f64, price: f64) -> bool {
-    side == Side::Sell && qty * price < SPOT_DUST_NOTIONAL_USD
-}
-
 /// Main async actor-style loop for live trading.
 ///
 /// # Returns
@@ -222,17 +215,13 @@ pub async fn live_loop(
     if adopt {
         warn!("OMNITRADE_ADOPT_POSITION=1: bestehende Position wird als Laufposition uebernommen");
     }
-    let mut exposure = max_notional.map(|cap| {
-        ExposureLimit::new(cap)
-            .allow_shorts(allow_shorts)
-            .adopt_existing(adopt)
-    });
+    // Laufbestand über Neustarts: der Wrapper startet die CLI nach jedem Ende neu.
+    let mut run_state = run_state::RunState::open(status.path(), symbol, &network.to_string());
     // Long-only gilt AUCH ohne Deckel: die Bremse haengt nicht an --max-notional.
-    let mut long_only = LongOnlyGuard::new().adopt_existing(adopt);
+    let (mut exposure, mut long_only) =
+        run_guards(max_notional, allow_shorts, adopt, run_state.resume());
     // Zustand der Skript-Auswertung (Trailing-Stop-Hoch etc.) über alle Kerzen.
     let mut script_state = EvaluatorState::new(0.0);
-    // Spot: Bestand der Basiswaehrung vor dem ersten Auftrag dieses Laufs.
-    let mut spot_start: Option<f64> = None;
     // Perpetual: realisierter PnL des Laufs und der Positionsstand der letzten Kerze.
     let mut run_realized = 0.0_f64;
     let mut perp_zuvor: Option<PositionSnapshot> = None;
@@ -362,7 +351,7 @@ pub async fn live_loop(
                 (Some(snapshot.base_qty), false)
             }
             Ok(_) => {
-                match spot_run_net(&exchange_trading, symbol, adopt, &mut spot_start).await {
+                match spot_run_net(&exchange_trading, symbol, adopt, &mut run_state).await {
                     Ok(net) => {
                         status.set_net_quantity(net);
                         (Some(net), true)
@@ -501,4 +490,4 @@ pub(crate) use orders::place_order_with_risk_check;
 pub(crate) use orders::{
     cancel_open_orders, order_side, place_order_guarded, place_order_with_kill,
 };
-use orders::{halt_trading, spot_run_net};
+use orders::{halt_trading, is_spot_dust_sell, spot_run_net, SPOT_DUST_NOTIONAL_USD};
