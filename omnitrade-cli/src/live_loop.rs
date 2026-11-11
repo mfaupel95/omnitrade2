@@ -164,6 +164,15 @@ pub struct LiveConfig<'a> {
 /// Er lässt sich nur per Code-Änderung anheben, nie per Argument.
 pub const MAINNET_HARD_CAP: f64 = 100.0;
 
+/// Unterhalb dieses Nominalwerts (Quote-Währung) ist ein Spot-Verkauf Staub: die Börse
+/// lehnt ihn ab, und die Strategie würde ihn bei jeder Kerze erneut versuchen.
+pub(crate) const SPOT_DUST_NOTIONAL_USD: f64 = 1.0;
+
+/// `true` für einen Spot-Verkauf, dessen Nominalwert unter [`SPOT_DUST_NOTIONAL_USD`] liegt.
+pub(crate) fn is_spot_dust_sell(side: Side, qty: f64, price: f64) -> bool {
+    side == Side::Sell && qty * price < SPOT_DUST_NOTIONAL_USD
+}
+
 /// Main async actor-style loop for live trading.
 ///
 /// # Returns
@@ -419,6 +428,10 @@ pub async fn live_loop(
         } else {
             order_quantity
         };
+        if is_spot && is_spot_dust_sell(side, qty, candle.close) {
+            info!("Spot-Staub {qty} {symbol} unter {SPOT_DUST_NOTIONAL_USD} USD: kein Verkauf");
+            continue;
+        }
 
         let order_req = OrderRequest::market(symbol.to_string(), side, qty);
         info!("Placing order: {:?}", order_req);

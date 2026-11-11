@@ -3,6 +3,16 @@
 use super::test_support::*;
 use super::*;
 
+#[test]
+fn spot_dust_sell_is_skipped_but_real_sell_is_not() {
+    // Staub: 1e-8 BTC bei 73.000 USD ist weit unter einem Dollar.
+    assert!(is_spot_dust_sell(Side::Sell, 1e-8, 73_000.0));
+    // 0,001 BTC bei 73.000 USD sind rund 73 USD und damit ein echter Verkauf.
+    assert!(!is_spot_dust_sell(Side::Sell, 0.001, 73_000.0));
+    // Käufe sind nie Staub, auch wenn die Menge klein ist.
+    assert!(!is_spot_dust_sell(Side::Buy, 1e-8, 73_000.0));
+}
+
 #[tokio::test]
 async fn buy_signal_places_market_order_with_configured_quantity() {
     // Arrange
