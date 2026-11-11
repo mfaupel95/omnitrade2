@@ -172,6 +172,11 @@ impl StatusWriter {
         &self.status
     }
 
+    /// Pfad der Statusdatei, falls eine geschrieben wird. Der Laufbestand liegt daneben.
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
+    }
+
     pub fn set_state(&mut self, state: &str) {
         self.status.state = state.to_string();
     }
