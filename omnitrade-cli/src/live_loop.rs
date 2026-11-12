@@ -34,8 +34,8 @@ mod tests;
 
 pub(crate) use risk::{
     account_equity, bewertungs_waehrung, check_liquidation_distance, held_base,
-    realisiert_beim_schliessen, run_guards, split_symbol, valid_mainnet_cap, ExposureLimit,
-    LongOnlyGuard,
+    is_derivative_symbol, realisiert_beim_schliessen, run_guards, split_symbol, valid_mainnet_cap,
+    ExposureLimit, LongOnlyGuard,
 };
 
 /// Maximale Anzahl Kerzen, die für die Skript-Auswertung vorgehalten werden.
@@ -220,6 +220,10 @@ pub async fn live_loop(
     // Long-only gilt AUCH ohne Deckel: die Bremse haengt nicht an --max-notional.
     let (mut exposure, mut long_only) =
         run_guards(max_notional, allow_shorts, adopt, run_state.resume());
+    // Derivate: die gesamte Position zählt gegen den Deckel, auch aus einem früheren Lauf.
+    if is_derivative_symbol(symbol) {
+        exposure = exposure.map(|e| e.adopt_existing(true));
+    }
     // Zustand der Skript-Auswertung (Trailing-Stop-Hoch etc.) über alle Kerzen.
     let mut script_state = EvaluatorState::new(0.0);
     // Perpetual: realisierter PnL des Laufs und der Positionsstand der letzten Kerze.
