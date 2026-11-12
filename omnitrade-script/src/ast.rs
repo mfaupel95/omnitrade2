@@ -237,20 +237,10 @@ mod tests {
     }
 
     #[test]
-    fn test_stop_loss_statement() {
-        let stmt = Stmt::StopLoss(Expr::Number(100.0));
-        assert_eq!(stmt, Stmt::StopLoss(Expr::Number(100.0)));
-    }
-
-    #[test]
-    fn test_take_profit_statement() {
-        let stmt = Stmt::TakeProfit(Expr::Number(120.0));
-        assert_eq!(stmt, Stmt::TakeProfit(Expr::Number(120.0)));
-    }
-
-    #[test]
-    fn test_trailing_stop_statement() {
-        let stmt = Stmt::TrailingStop(Expr::Number(0.05));
-        assert_eq!(stmt, Stmt::TrailingStop(Expr::Number(0.05)));
+    fn test_stop_target_and_trailing_statements() {
+        let (sl, tp, ts) = (Expr::Number(100.0), Expr::Number(120.0), Expr::Number(0.05));
+        assert_eq!(Stmt::StopLoss(sl.clone()), Stmt::StopLoss(sl));
+        assert_eq!(Stmt::TakeProfit(tp.clone()), Stmt::TakeProfit(tp));
+        assert_eq!(Stmt::TrailingStop(ts.clone()), Stmt::TrailingStop(ts));
     }
 }
