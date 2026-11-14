@@ -1,0 +1,221 @@
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling windows-sys v0.61.2
+   Compiling autocfg v1.5.1
+   Compiling khronos_api v3.1.0
+   Compiling windows-sys v0.52.0
+   Compiling cfg_aliases v0.2.2
+   Compiling bytemuck_derive v1.12.1
+   Compiling xml-rs v0.8.29
+   Compiling log v0.4.35
+   Compiling parking_lot_core v0.9.12
+   Compiling ahash v0.8.12
+   Compiling ttf-parser v0.25.1
+   Compiling lock_api v0.4.14
+   Compiling bitflags v2.13.2
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling simd-adler32 v0.3.10
+   Compiling epaint_default_fonts v0.30.0
+   Compiling nohash-hasher v0.2.0
+   Compiling adler2 v2.0.1
+   Compiling crc32fast v1.5.4
+   Compiling profiling v1.0.18
+   Compiling raw-window-handle v0.6.2
+   Compiling unicode-segmentation v1.13.3
+   Compiling cursor-icon v1.2.0
+   Compiling dpi v0.1.2
+   Compiling smol_str v0.2.2
+   Compiling error-code v3.4.0
+   Compiling winit v0.30.13
+   Compiling glutin v0.32.3
+   Compiling fdeflate v0.3.7
+   Compiling miniz_oxide v0.9.1
+   Compiling clipboard-win v5.4.3
+   Compiling miniz_oxide v0.8.9
+   Compiling num-traits v0.2.19
+   Compiling memoffset v0.9.1
+   Compiling glutin-winit v0.5.0
+   Compiling libloading v0.8.9
+   Compiling pxfm v0.1.30
+   Compiling winapi v0.3.9
+   Compiling webbrowser v1.2.6
+   Compiling litrs v1.0.1
+   Compiling web-time v1.1.0
+   Compiling either v1.19.0
+   Compiling glow v0.16.0
+   Compiling byteorder-lite v0.1.0
+   Compiling itertools v0.13.0
+   Compiling windows-sys v0.59.0
+   Compiling static_assertions v1.1.0
+   Compiling document-features v0.2.12
+   Compiling owned_ttf_parser v0.25.1
+   Compiling bytemuck v1.25.2
+   Compiling flate2 v1.1.11
+   Compiling ab_glyph v0.2.32
+   Compiling png v0.18.1
+   Compiling parking_lot v0.12.5
+   Compiling socket2 v0.5.10
+   Compiling keyring v2.3.3
+   Compiling moxcms v0.8.1
+   Compiling approx v0.5.1
+   Compiling serde_json v1.0.154
+   Compiling csv v1.4.0
+   Compiling gl_generator v0.14.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling emath v0.30.0
+   Compiling glutin_wgl_sys v0.6.1
+   Compiling glutin_egl_sys v0.7.1
+   Compiling omnitrade-core v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-core)
+   Compiling omnitrade-script v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-script)
+   Compiling ecolor v0.30.0
+   Compiling epaint v0.30.0
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling schannel v0.1.30
+   Compiling arboard v3.7.0
+   Compiling anstyle-wincon v3.0.11
+   Compiling anstyle-query v1.1.5
+   Compiling nu-ansi-term v0.50.3
+   Compiling anstream v1.0.0
+   Compiling native-tls v0.2.18
+   Compiling tokio v1.54.1
+   Compiling tracing-subscriber v0.3.23
+   Compiling clap_builder v4.6.7
+   Compiling image v0.25.10
+   Compiling tungstenite v0.26.2
+   Compiling egui v0.30.0
+   Compiling clap v4.6.7
+   Compiling tokio-util v0.7.20
+   Compiling tokio-native-tls v0.3.1
+   Compiling tokio-stream v0.1.19
+   Compiling omnitrade-risk v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-risk)
+   Compiling tokio-tungstenite v0.26.2
+   Compiling omnitrade-engine v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-engine)
+   Compiling h2 v0.3.27
+   Compiling tokio-test v0.4.6
+   Compiling hyper v0.14.32
+   Compiling egui_glow v0.30.0
+   Compiling egui-winit v0.30.0
+   Compiling egui_tiles v0.11.0
+   Compiling eframe v0.30.0
+   Compiling hyper-tls v0.5.0
+   Compiling reqwest v0.11.27
+   Compiling omnitrade-exchange v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-exchange)
+   Compiling omnitrade-ui v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-ui)
+   Compiling omnitrade-cli v0.1.0 (C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\omnitrade-cli)
+error[E0786]: found invalid metadata files for crate `omnitrade_exchange`
+ --> omnitrade-exchange\tests\okx_eea_public.rs:8:5
+  |
+8 | use omnitrade_exchange::okx::{InstType, OkxRestClient};
+  |     ^^^^^^^^^^^^^^^^^^
+  |
+  = note: failed to mmap file '\\?\C:\Users\faupe\Documents\BrainFiles\.worktrees\hermes-omnitrade-offline-core\target-offline\debug\deps\libomnitrade_exchange-aa5f8fc5bec44ee6.rlib': Die Auslagerungsdatei ist zu klein, um diesen Vorgang durchzuführen. (os error 1455)
+
+For more information about this error, try `rustc --explain E0786`.
+error: could not compile `omnitrade-exchange` (test "okx_eea_public") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+memory allocation of 1081360 bytes failed
+stack backtrace:
+rustc-LLVM ERROR: out of memory
+Allocation failed
+error: crate `typenum` required to be available in rlib format, but was not found in this form
+
+error: crate `schannel` required to be available in rlib format, but was not found in this form
+
+error: crate `ipnet` required to be available in rlib format, but was not found in this form
+
+error: could not compile `omnitrade-exchange` (example "history_probe") due to 1 previous error
+error: could not compile `omnitrade-exchange` (example "okx_swap_demo_probe") due to 1 previous error
+error: crate `socket2` required to be available in rlib format, but was not found in this form
+
+error: crate `base64` required to be available in rlib format, but was not found in this form
+
+error: could not compile `omnitrade-exchange` (example "kraken_probe") due to 2 previous errors
+   0:     0x7ff953ff19b9 - std::backtrace_rs::backtrace::win64::trace
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1:     0x7ff953ff19b9 - std::backtrace_rs::backtrace::trace_unsynchronized
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2:     0x7ff953ff19b9 - std::sys::backtrace::_print_fmt
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\sys\backtrace.rs:74
+   3:     0x7ff953ff19b9 - std::sys::backtrace::impl$0::print::impl$0::fmt
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\sys\backtrace.rs:44
+   4:     0x7ff95401a9f1 - core::fmt::write
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\core\src\fmt\mod.rs:0
+   5:     0x7ff954001874 - std::io::default_write_fmt
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\io\mod.rs:626
+   6:     0x7ff954001874 - std::io::Write::write_fmt<std::sys::stdio::windows::Stderr>
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\io\mod.rs:1730
+   7:     0x7ff953fe393c - std::sys::backtrace::BacktraceLock::print
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\sys\backtrace.rs:47
+   8:     0x7ff953fe393c - std::alloc::default_alloc_error_hook
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\alloc.rs:397
+   9:     0x7ff953fc815c - std::alloc::rust_oom::closure$0
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\alloc.rs:428
+  10:     0x7ff953fc578f - std::sys::backtrace::__rust_end_short_backtrace<std::alloc::rust_oom::closure_env$0,never$>
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\sys\backtrace.rs:182
+  11:     0x7ff953fe39db - std::alloc::rust_oom
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\alloc.rs:424
+  12:     0x7ff953fc8f98 - std::alloc::_::__rust_alloc_error_handler
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\alloc.rs:423
+  13:     0x7ff95403d9e9 - alloc::alloc::handle_alloc_error::rt_error
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\alloc\src\alloc.rs:551
+  14:     0x7ff95403d9e9 - alloc::alloc::handle_alloc_error
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\alloc\src\alloc.rs:557
+  15:     0x7ff954007cb5 - hashbrown::raw::Fallibility::alloc_err
+                               at /rust/deps\hashbrown-0.17.1/src\raw.rs:45
+error: could not compile `omnitrade-exchange` (test "binance_integration") due to 1 previous error
+  16:     0x7fffd20dc6bb - RINvMs6_NtCs21zBS6O3Cve_9hashbrown3rawINtB6_8RawTableTTPuNtNtCsinu1ktnSElL_21rustc_data_structures11stable_hash18StableHashControlsENtNtBX_11fingerprint11FingerprintEE14reserve_rehashNCINvNtB8_3map11make_hasherBQ_B26_NtCschGcJUfm6ZK_10rustc_hash13FxBuildHa
+  17:     0x7fffd1956d5a - RINvMs6_NtCseFzGwGcGReH_9hashbrown3rawINtB6_8RawTableTTNtNtNtCslxZn9F6ZAXH_12rustc_middle2ty8instance8InstanceNtNtBX_4mono14CollectionModeETINtNtNtBX_5query5erase10ErasedDataAhj20_ENtNtNtBX_9dep_graph5graph12DepNodeIndexEEE14reserve_rehashNCNvMs1_NtCsinu1k
+  18:     0x7fffd197b3d4 - RINvMs6_NtCseFzGwGcGReH_9hashbrown3rawINtB6_8RawTableTTNtNtNtCslxZn9F6ZAXH_12rustc_middle2ty8instance8InstanceNtNtBX_4mono14CollectionModeETINtNtNtBX_5query5erase10ErasedDataAhj20_ENtNtNtBX_9dep_graph5graph12DepNodeIndexEEE14reserve_rehashNCNvMs1_NtCsinu1k
+  19:     0x7fffd06274a4 - rustc_query_impl[757a2518e15308ec]::plumbing::verify_query_key_hashes
+  20:     0x7fffd187603c - rustc_ty_utils[a23332fb4bb35fd4]::instance::resolve_instance_raw
+  21:     0x7fffd04f9fa3 - <<rustc_ty_utils[a23332fb4bb35fd4]::opaque_types::OpaqueTypeCollector>::collect_taits_declared_in_body::TaitInBodyFinder as rustc_hir[55250e77a429a444]::intravisit::Visitor>::visit_nested_item
+error: could not compile `omnitrade-exchange` (lib test)
+
+Caused by:
+  process didn't exit successfully: `C:/Users/faupe/.config/rustup\toolchains\stable-x86_64-pc-windows-msvc\bin\rustc.exe --crate-name omnitrade_exchange --edition=2021 'omnitrade-exchange\src\lib.rs' --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=03b672040a771dfd -C extra-filename=-91ce91d3323df721 --out-dir 'C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps' -C 'incremental=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\incremental' -L 'dependency=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps' --extern 'async_trait=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\async_trait-af026fbe01dcc4db.dll' --extern 'base64=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libbase64-9f61f411316ebb98.rlib' --extern 'futures_util=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libfutures_util-89772c6d3303250a.rlib' --extern 'hex=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libhex-ffba21651d5761e8.rlib' --extern 'hmac=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libhmac-f4daf6800941834d.rlib' --extern 'keyring=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libkeyring-46fabea1d7d0a097.rlib' --extern 'omnitrade_core=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libomnitrade_core-21aaaefc04929cb1.rlib' --extern 'reqwest=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libreqwest-0b405e3be7cee2db.rlib' --extern 'serde=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libserde-00c09411ed1c4980.rlib' --extern 'serde_json=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libserde_json-55afa29efd820293.rlib' --extern 'sha2=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libsha2-591343f94ef1013c.rlib' --extern 'thiserror=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libthiserror-e7dfb2b98e78f60f.rlib' --extern 'tokio=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtokio-8ed1dc517b24b9a8.rlib' --extern 'tokio_test=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtokio_test-2c136caeebd356a9.rlib' --extern 'tokio_tungstenite=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtokio_tungstenite-1e20942fa5b88c81.rlib' --extern 'tracing=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtracing-fc8103b410d25a73.rlib' --extern 'urlencoding=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\liburlencoding-3c910c9b95d4cc19.rlib' -L 'native=C:/Users/faupe/.config/cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows_x86_64_msvc-0.52.6\lib' -L 'native=C:/Users/faupe/.config/cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows_x86_64_msvc-0.48.5\lib'` (exit code: 0xc0000409, STATUS_STACK_BUFFER_OVERRUN)
+  22:     0x7fffd40bae89 - rustc_query_impl[757a2518e15308ec]::execution::collect_active_query_jobs
+  23:     0x7fffd1ae6e05 - rustc_codegen_ssa[4c26b17a03c7b65b]::back::symbol_export::upstream_monomorphizations_for_provider
+  24:     0x7fffd0604010 - rustc_query_impl[757a2518e15308ec]::plumbing::verify_query_key_hashes
+  25:     0x7fffd18cee0d - RINvMs6_NtCseFzGwGcGReH_9hashbrown3rawINtB6_8RawTableTTNtNtNtCslxZn9F6ZAXH_12rustc_middle2ty8instance8InstanceNtNtBX_4mono14CollectionModeETINtNtNtBX_5query5erase10ErasedDataAhj20_ENtNtNtBX_9dep_graph5graph12DepNodeIndexEEE14reserve_rehashNCNvMs1_NtCsinu1k
+  26:     0x7fffd0603ee7 - rustc_query_impl[757a2518e15308ec]::plumbing::verify_query_key_hashes
+  27:     0x7fffd213962b - <rustc_middle[fafc4954b0cce51f]::ty::instance::Instance>::upstream_monomorphization
+  28:     0x7fffd0f3cae0 - rustc_monomorphize[2c0cafeec4eec405]::collector::should_codegen_locally
+  29:     0x7fffd0f1c6c9 - rustc_monomorphize[2c0cafeec4eec405]::partitioning::collect_and_partition_mono_items
+  30:     0x7fffd0f2e1ed - rustc_monomorphize[2c0cafeec4eec405]::collector::items_of_instance
+  31:     0x7fffd19a39b3 - rustc_query_impl[757a2518e15308ec]::dep_kind_vtables::make_dep_kind_vtables
+  32:     0x7fffd1948fd2 - RINvMs6_NtCseFzGwGcGReH_9hashbrown3rawINtB6_8RawTableTTNtNtNtCslxZn9F6ZAXH_12rustc_middle2ty8instance8InstanceNtNtBX_4mono14CollectionModeETINtNtNtBX_5query5erase10ErasedDataAhj20_ENtNtNtBX_9dep_graph5graph12DepNodeIndexEEE14reserve_rehashNCNvMs1_NtCsinu1k
+  33:     0x7fffd19a304c - rustc_query_impl[757a2518e15308ec]::dep_kind_vtables::make_dep_kind_vtables
+  34:     0x7fffd0f09eee - RINvNtNtNtNtCs8xEFJqa6dYS_4core5slice4sort6stable9quicksort9quicksortTRNtNtCslxZn9F6ZAXH_12rustc_middle4mono8MonoItemNtNtB1b_2ty10SymbolNameENCINvMNtCsfQUUnEvlYZE_5alloc5sliceSB15_11sort_by_keyB1R_NCINvNtCs3Mtr1oaTvof_18rustc_monomorphize12partitioning27as
+  35:     0x7fffd0f263dd - rustc_monomorphize[2c0cafeec4eec405]::partitioning::collect_and_partition_mono_items
+  36:     0x7fffd027d6d0 - core[6380f46c71b215e4]::slice::sort::stable::quicksort::quicksort::<rustc_middle[fafc4954b0cce51f]::mono::CodegenUnit, <[rustc_middle[fafc4954b0cce51f]::mono::CodegenUnit]>::sort_by<rustc_monomorphize[2c0cafeec4eec405]::partitioning::merge_codegen_units::{closure#6}>::{closure#0}>
+  37:     0x7fffd0f137d8 - rustc_monomorphize[2c0cafeec4eec405]::partitioning::collect_and_partition_mono_items
+  38:     0x7fffd0604a27 - rustc_query_impl[757a2518e15308ec]::plumbing::verify_query_key_hashes
+  39:     0x7fffd04f0f50 - <<rustc_ty_utils[a23332fb4bb35fd4]::opaque_types::OpaqueTypeCollector>::collect_taits_declared_in_body::TaitInBodyFinder as rustc_hir[55250e77a429a444]::intravisit::Visitor>::visit_nested_item
+  40:     0x7fffd40bca91 - rustc_query_impl[757a2518e15308ec]::execution::collect_active_query_jobs
+  41:     0x7fffcdecf30f - <rustc_interface[d9e19aed855a9319]::passes::LintStoreExpandImpl as rustc_expand[a8bf8b382ff6dbb6]::base::LintStoreExpand>::pre_expansion_lint
+  42:     0x7fffcdf3b913 - <rustc_codegen_llvm[78fdeeb4f51d84b2]::LlvmCodegenBackend as rustc_codegen_ssa[4c26b17a03c7b65b]::traits::backend::CodegenBackend>::codegen_crate
+  43:     0x7fffcdeae233 - <rustc_interface[d9e19aed855a9319]::queries::Linker>::codegen_and_build_linker
+  44:     0x7fffcde80a59 - std[2a1f8e54e2930f4]::sys::backtrace::__rust_begin_short_backtrace::<std[2a1f8e54e2930f4]::thread::lifecycle::spawn_unchecked<ctrlc[75dfe702384e6772]::set_handler_inner<rustc_driver_impl[9361cccfbcde1e27]::install_ctrlc_handler::{closure#0}>::{closure#0}, ()>::{closure#1}::{closure#0}::{closure#0}, ()>
+  45:     0x7fffcde78a05 - RINvNtNtCse0R8cuyqEa_3std3sys9backtrace28___rust_begin_short_backtraceNCNCINvNtCsiHMamp5DUIn_15rustc_interface4util26run_in_thread_with_globalsNCINvB1d_31run_in_thread_pool_with_globalsNCINvNtB1f_9interface12run_compileruNCNvCscEvGEeMUPR3_17rustc_driver_im
+  46:     0x7fffcde84a97 - std[2a1f8e54e2930f4]::sys::backtrace::__rust_begin_short_backtrace::<std[2a1f8e54e2930f4]::thread::lifecycle::spawn_unchecked<ctrlc[75dfe702384e6772]::set_handler_inner<rustc_driver_impl[9361cccfbcde1e27]::install_ctrlc_handler::{closure#0}>::{closure#0}, ()>::{closure#1}::{closure#0}::{closure#0}, ()>
+  47:     0x7ff953fee6a3 - std::sys::thread::windows::impl$0::new::thread_start
+                               at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library\std\src\sys\thread\windows.rs:58
+  48:     0x7ff99f5fdda7 - BaseThreadInitThunk
+  49:     0x7ff9a169ee4c - RtlUserThreadStart
+error: could not compile `omnitrade-exchange` (example "filters_probe")
+
+Caused by:
+  process didn't exit successfully: `C:/Users/faupe/.config/rustup\toolchains\stable-x86_64-pc-windows-msvc\bin\rustc.exe --crate-name filters_probe --edition=2021 'omnitrade-exchange\examples\filters_probe.rs' --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=6d54eebf0faf3dba --out-dir 'C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\examples' -C 'incremental=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\incremental' -L 'dependency=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps' --extern 'async_trait=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\async_trait-af026fbe01dcc4db.dll' --extern 'base64=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libbase64-9f61f411316ebb98.rlib' --extern 'futures_util=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libfutures_util-89772c6d3303250a.rlib' --extern 'hex=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libhex-ffba21651d5761e8.rlib' --extern 'hmac=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libhmac-f4daf6800941834d.rlib' --extern 'keyring=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libkeyring-46fabea1d7d0a097.rlib' --extern 'omnitrade_core=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libomnitrade_core-21aaaefc04929cb1.rlib' --extern 'omnitrade_exchange=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libomnitrade_exchange-aa5f8fc5bec44ee6.rlib' --extern 'reqwest=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libreqwest-0b405e3be7cee2db.rlib' --extern 'serde=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libserde-00c09411ed1c4980.rlib' --extern 'serde_json=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libserde_json-55afa29efd820293.rlib' --extern 'sha2=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libsha2-591343f94ef1013c.rlib' --extern 'thiserror=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libthiserror-e7dfb2b98e78f60f.rlib' --extern 'tokio=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtokio-8ed1dc517b24b9a8.rlib' --extern 'tokio_test=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtokio_test-2c136caeebd356a9.rlib' --extern 'tokio_tungstenite=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtokio_tungstenite-1e20942fa5b88c81.rlib' --extern 'tracing=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\libtracing-fc8103b410d25a73.rlib' --extern 'urlencoding=C:/Users/faupe/Documents/BrainFiles/.worktrees/hermes-omnitrade-offline-core/target-offline\debug\deps\liburlencoding-3c910c9b95d4cc19.rlib' -L 'native=C:/Users/faupe/.config/cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows_x86_64_msvc-0.52.6\lib' -L 'native=C:/Users/faupe/.config/cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows_x86_64_msvc-0.48.5\lib'` (exit code: 0xc0000409, STATUS_STACK_BUFFER_OVERRUN)
+error: crate `tokio_tungstenite` required to be available in rlib format, but was not found in this form
+
+error: crate `owned_ttf_parser` required to be available in rlib format, but was not found in this form
+
+error: crate `sha2` required to be available in rlib format, but was not found in this form
+
+error: could not compile `omnitrade-ui` (bin "omnitrade-ui" test) due to 2 previous errors
+error: could not compile `omnitrade-ui` (example "feed_probe") due to 2 previous errors
+error: could not compile `omnitrade-ui` (lib test) due to 1 previous error
+error: crate `clap_builder` required to be available in rlib format, but was not found in this form
+
+error: could not compile `omnitrade-cli` (bin "omnitrade-cli" test) due to 1 previous error

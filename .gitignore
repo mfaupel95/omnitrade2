@@ -47,3 +47,7 @@ id_ed25519*
 .claude/*
 !.claude/skills/
 /target-live/
+
+# Build-Ausgabe und Python-Caches der Offline-Pruefung nicht versionieren.
+/target-offline/
+__pycache__/
